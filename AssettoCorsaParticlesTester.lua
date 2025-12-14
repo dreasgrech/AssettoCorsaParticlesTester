@@ -17,6 +17,7 @@ local ui_sameLine = ui.sameLine
 local ui_pushID = ui.pushID
 local ui_popID = ui.popID
 local ui_text = ui.text
+local ui_checkbox = ui.checkbox
 local string_format = string.format
 
 
@@ -113,6 +114,7 @@ function ac.Particles.Smoke(params) end
 --]======]
 
 ---@class StorageTable
+---@field flame_enabled boolean
 ---@field flame_velocity vec3
 ---@field flame_color rgbm
 ---@field flame_size number
@@ -122,6 +124,7 @@ function ac.Particles.Smoke(params) end
 
 ---@type StorageTable
 local storageTable = {
+    flame_enabled = true,
     flame_velocity = vec3(0, 1, 0),
     flame_color = rgbm(1.0, 0.5, 0.0, 1.0),
     flame_size = 0.5,
@@ -156,17 +159,24 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     ui_newLine(1)
     ui_dwriteText('Flames', UI_HEADER_TEXT_FONT_SIZE)
     ui_newLine(1)
+
+    if ui_checkbox('Enabled', storage.flame_enabled) then storage.flame_enabled = not storage.flame_enabled end
+    
+    ui_newLine(1)
+    ui_newLine(1)
     
     ui_text('Velocity')
     storage.flame_velocity = uiVec3('Velocity', storage.flame_velocity, -100, 100)
+    
+    ui_newLine(1)
 
     ui.colorButton('Flames Color', storage.flame_color, colorPickerFlags, colorPickerSize)
     ui_sameLine()
     ui.text('Color')
-    storage.flame_size = renderSlider('Size', 'The description', storage.flame_size, 0, 200, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 50)
+    storage.flame_size = renderSlider('Size', 'The description', storage.flame_size, 0, 50, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 50)
     storage.flame_temperatureMultiplier = renderSlider('Temperature Multiplier', 'The description', storage.flame_temperatureMultiplier, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
     storage.flame_flameIntensity = renderSlider('Flame Intensity', 'The description', storage.flame_flameIntensity, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
-    storage.flame_amount = renderSlider('Amount', 'The description', storage.flame_amount, 1, 100, DEFAULT_SLIDER_WIDTH, '%.0f', 5)
+    storage.flame_amount = renderSlider('Amount', 'The description', storage.flame_amount, 1, 10, DEFAULT_SLIDER_WIDTH, '%.0f', 1)
     
     -- finish the columns
     ui_columns(1, false)
@@ -180,12 +190,15 @@ function script.MANIFEST__UPDATE(dt)
   --if sim.isPaused then return end
 
     local position = ac.getCar(0).position
+    if storage.flame_enabled then
+        flame.color = storage.flame_color
+        flame.size = storage.flame_size
+        flame.temperatureMultiplier = storage.flame_temperatureMultiplier
+        flame.flameIntensity = storage.flame_flameIntensity
+        flame:emit(position, storage.flame_velocity, storage.flame_amount)
+    end
+    
     --position.y = position.y + 1.0
-    flame.color = storage.flame_color
-    flame.size = storage.flame_size
-    flame.temperatureMultiplier = storage.flame_temperatureMultiplier
-    flame.flameIntensity = storage.flame_flameIntensity
-    flame:emit(position, storage.flame_velocity, storage.flame_amount)
 end
 
 ---
