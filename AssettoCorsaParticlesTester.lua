@@ -13,12 +13,18 @@ local ui_itemHovered = ui.itemHovered
 local ui_setTooltip = ui.setTooltip
 local ui_mouseClicked = ui.mouseClicked
 local ui_MouseButton = ui.MouseButton
+local ui_sameLine = ui.sameLine
+local ui_pushID = ui.pushID
+local ui_popID = ui.popID
+local ui_text = ui.text
 local string_format = string.format
 
 
 local UI_HEADER_TEXT_FONT_SIZE = 15
 local DEFAULT_SLIDER_WIDTH = 200
 local DEFAULT_SLIDER_FORMAT = '%.2f'
+
+
 
 ---Renders a slider with a tooltip
 ---@param label string @Slider label.
@@ -35,7 +41,8 @@ local renderSlider = function(label, tooltip, value, minValue, maxValue, sliderW
     ui_pushItemWidth(sliderWidth)
 
     -- render the slider
-    local newValue = ui_slider(label, value, minValue, maxValue, labelFormat)
+    -- Andreas: doing the ' ' .. label thing here because when writing a label after the slider manually, there's an extra space so here I'm adding an extra space so they can match
+    local newValue = ui_slider(' ' .. label, value, minValue, maxValue, labelFormat)
 
     -- reset the item width
     ui_popItemWidth()
@@ -54,6 +61,28 @@ local renderSlider = function(label, tooltip, value, minValue, maxValue, sliderW
     end
 
     return newValue
+end
+
+---Renders a vec3 slider (3 sliders in one line).
+---@param label string @Slider label.
+---@param value vec3 @Current vec3 value.
+---@param minValue number @Minimum slider value.
+---@param maxValue number @Maximum slider value.
+---@param format string|'X: %.3f'|'Y: %.3f'|'Z: %.3f'|nil @C-style format string. Default value: `'X: %.3f'`, `'Y: %.3f'`, `'Z: %.3f'
+---@return vec3 newValue
+---@return boolean changed
+local function uiVec3(label, value, minValue, maxValue, format)
+    ui_pushID(label)
+
+    local x = renderSlider('##x', '', value.x, minValue, maxValue, 350, format or 'X: %.3f', 0)
+    --ui_sameLine()
+    local y = renderSlider('##y', '', value.y, minValue, maxValue, 350, format or 'Y: %.3f', 0)
+    --ui_sameLine()
+    local z = renderSlider('##z', '', value.z, minValue, maxValue, 350, format or 'Z: %.3f', 0)
+
+    ui_popID()
+
+    return vec3(x, y, z)
 end
 
 --[======[
@@ -83,22 +112,38 @@ ac.Particles.SmokeFlags = { FadeIn = 1, DisableCollisions = 256 }
 function ac.Particles.Smoke(params) end
 --]======]
 
-local flame_color = rgbm(1.0, 0.5, 0.0, 1.0)
-local flame_size = 0.5
-local flame_temperatureMultiplier = 1.0
-local flame_flameIntensity = 1.0
-local flame_amount = 5
+---@class StorageTable
+---@field flame_velocity vec3
+---@field flame_color rgbm
+---@field flame_size number
+---@field flame_temperatureMultiplier number
+---@field flame_flameIntensity number
+---@field flame_amount number
+
+---@type StorageTable
+local storageTable = {
+    flame_velocity = vec3(0, 1, 0),
+    flame_color = rgbm(1.0, 0.5, 0.0, 1.0),
+    flame_size = 0.5,
+    flame_temperatureMultiplier = 1.0,
+    flame_flameIntensity = 1.0,
+    flame_amount = 1
+}
+
+---@type StorageTable
+local storage = ac.storage(storageTable, "global")
 
 ---@type ui.ColorPickerFlags
 local colorPickerFlags = bit.bor(
   ui.ColorPickerFlags.PickerHueWheel
 )
+local colorPickerSize = vec2(DEFAULT_SLIDER_WIDTH, 20)
 
 local flame = ac.Particles.Flame( {
-    color = flame_color,
-    size = flame_size,
-    temperatureMultiplier = flame_temperatureMultiplier,
-    flameIntensity = flame_flameIntensity
+    color = storage.flame_color,
+    size = storage.flame_size,
+    temperatureMultiplier = storage.flame_temperatureMultiplier,
+    flameIntensity = storage.flame_flameIntensity
 })
 
 -- Function defined in manifest.ini
@@ -111,12 +156,17 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     ui_newLine(1)
     ui_dwriteText('Flames', UI_HEADER_TEXT_FONT_SIZE)
     ui_newLine(1)
+    
+    ui_text('Velocity')
+    storage.flame_velocity = uiVec3('Velocity', storage.flame_velocity, -100, 100)
 
-    ui.colorButton('label', flame_color, colorPickerFlags, 20)
-    flame_size = renderSlider('Size', 'The description', flame_size, 0, 200, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 50)
-    flame_temperatureMultiplier = renderSlider('Temperature Multiplier', 'The description', flame_temperatureMultiplier, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
-    flame_flameIntensity = renderSlider('Flame Intensity', 'The description', flame_flameIntensity, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
-    flame_amount = renderSlider('Amount', 'The description', flame_amount, 1, 100, DEFAULT_SLIDER_WIDTH, '%.0f', 5)
+    ui.colorButton('Flames Color', storage.flame_color, colorPickerFlags, colorPickerSize)
+    ui_sameLine()
+    ui.text('Color')
+    storage.flame_size = renderSlider('Size', 'The description', storage.flame_size, 0, 200, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 50)
+    storage.flame_temperatureMultiplier = renderSlider('Temperature Multiplier', 'The description', storage.flame_temperatureMultiplier, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
+    storage.flame_flameIntensity = renderSlider('Flame Intensity', 'The description', storage.flame_flameIntensity, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
+    storage.flame_amount = renderSlider('Amount', 'The description', storage.flame_amount, 1, 100, DEFAULT_SLIDER_WIDTH, '%.0f', 5)
     
     -- finish the columns
     ui_columns(1, false)
@@ -128,16 +178,14 @@ end
 function script.MANIFEST__UPDATE(dt)
   local sim = ac_getSim()
   --if sim.isPaused then return end
-    ac.log('asd')
 
     local position = ac.getCar(0).position
     --position.y = position.y + 1.0
-    local EFFECT_VELOCITY = vec3(0, 1, 0)
-    flame.color = flame_color
-    flame.size = flame_size
-    flame.temperatureMultiplier = flame_temperatureMultiplier
-    flame.flameIntensity = flame_flameIntensity
-    flame:emit(position, EFFECT_VELOCITY, flame_amount)
+    flame.color = storage.flame_color
+    flame.size = storage.flame_size
+    flame.temperatureMultiplier = storage.flame_temperatureMultiplier
+    flame.flameIntensity = storage.flame_flameIntensity
+    flame:emit(position, storage.flame_velocity, storage.flame_amount)
 end
 
 ---
