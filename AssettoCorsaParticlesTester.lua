@@ -1,4 +1,5 @@
 
+-- local bindings
 local ac = ac
 local ac_getSim = ac.getSim
 local ui = ui
@@ -18,6 +19,7 @@ local ui_pushID = ui.pushID
 local ui_popID = ui.popID
 local ui_text = ui.text
 local ui_checkbox = ui.checkbox
+local ui_colorButton = ui.colorButton
 local string_format = string.format
 
 
@@ -26,6 +28,54 @@ local DEFAULT_SLIDER_WIDTH = 200
 local DEFAULT_SLIDER_FORMAT = '%.2f'
 
 
+local function getWorldPositionFromMouseClick()
+    -- Avoid conflicts if you’re using CSP’s gizmo/positioning helper
+    if render.isPositioningHelperBusy() then return nil end
+
+    -- Only act on a left-click (and avoid UI clicks)
+    if ui.mouseBusy() then return nil end
+    if not ui.mouseClicked(ui.MouseButton.Left) then return nil end
+
+    local ray = render.createMouseRay()
+
+    -- Option A: intersect visual track mesh
+    local hitDistance = ray:track(1)
+    if hitDistance >= 0 then
+        return ray.pos + ray.dir * hitDistance
+    end
+
+    -- Option B: intersect physics meshes (also gives normal if you pass out params)
+    local outPos = vec3()
+    local outNormal = vec3()
+    local physDistance = ray:physics(outPos, outNormal)
+    if physDistance >= 0 then
+        -- outPos already contains the contact point
+        return outPos, outNormal
+    end
+
+    return nil
+end
+
+---Color button control. Returns true if color has changed (as usual with Lua, colors are passed)
+---by reference so update value would be put in place of old one automatically.
+---@param label string
+---@param color rgb|rgbm
+---@param flags ui.ColorPickerFlags?
+---@param size vec2?
+---@return boolean
+local renderColorPicker = function(label, tooltip, color, flags, size)
+    ui_colorButton(label, color, flags, size)
+
+    if ui_itemHovered() then
+        -- render the tooltip
+        ui_setTooltip(tooltip)
+    end
+    
+    ui_sameLine()
+    ui.text(label)
+    
+    return color
+end
 
 ---Renders a slider with a tooltip
 ---@param label string @Slider label.
@@ -48,9 +98,9 @@ local renderSlider = function(label, tooltip, value, minValue, maxValue, sliderW
     -- reset the item width
     ui_popItemWidth()
 
-    tooltip = string_format('%s\n\nDefault: %.2f', tooltip, defaultValue)
-
     if ui_itemHovered() then
+        tooltip = string_format('%s\n\nDefault: %.2f', tooltip, defaultValue)
+        
         -- render the tooltip
         ui_setTooltip(tooltip)
 
@@ -115,6 +165,7 @@ function ac.Particles.Smoke(params) end
 
 ---@class StorageTable
 ---@field flame_enabled boolean
+---@field flame_position vec3
 ---@field flame_velocity vec3
 ---@field flame_color rgbm
 ---@field flame_size number
@@ -125,11 +176,12 @@ function ac.Particles.Smoke(params) end
 ---@type StorageTable
 local storageTable = {
     flame_enabled = true,
+    flame_position = vec3(0, 0, 0),
     flame_velocity = vec3(0, 1, 0),
-    flame_color = rgbm(1.0, 0.5, 0.0, 1.0),
-    flame_size = 0.5,
-    flame_temperatureMultiplier = 1.0,
-    flame_flameIntensity = 1.0,
+    flame_color = rgbm(0.5, 0.5, 0.5, 0.5), -- value from lib.lua
+    flame_size = 0.2, -- value from lib.lua
+    flame_temperatureMultiplier = 1.0, -- value from lib.lua
+    flame_flameIntensity = 0.0, -- value from lib.lua
     flame_amount = 1
 }
 
@@ -170,12 +222,10 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     
     ui_newLine(1)
 
-    ui.colorButton('Flames Color', storage.flame_color, colorPickerFlags, colorPickerSize)
-    ui_sameLine()
-    ui.text('Color')
-    storage.flame_size = renderSlider('Size', 'The description', storage.flame_size, 0, 50, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 50)
-    storage.flame_temperatureMultiplier = renderSlider('Temperature Multiplier', 'The description', storage.flame_temperatureMultiplier, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
-    storage.flame_flameIntensity = renderSlider('Flame Intensity', 'The description', storage.flame_flameIntensity, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
+    storage.flame_color = renderColorPicker('Color', 'Flame color multiplier\n\nFor red/yellow/blue adjustment use `Temperature Multiplier` instead.', storage.flame_color, colorPickerFlags, colorPickerSize)
+    storage.flame_size = renderSlider('Size', 'Particles size', storage.flame_size, 0, 50, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 50)
+    storage.flame_temperatureMultiplier = renderSlider('Temperature Multiplier', 'Temperature multipler to vary base color from red to blue.', storage.flame_temperatureMultiplier, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
+    storage.flame_flameIntensity = renderSlider('Flame Intensity', 'Flame intensity affecting flame look and behaviour.', storage.flame_flameIntensity, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
     storage.flame_amount = renderSlider('Amount', 'The description', storage.flame_amount, 1, 10, DEFAULT_SLIDER_WIDTH, '%.0f', 1)
     
     -- finish the columns
@@ -186,19 +236,18 @@ end
 -- wiki: called after a whole simulation update
 ---
 function script.MANIFEST__UPDATE(dt)
-  local sim = ac_getSim()
-  --if sim.isPaused then return end
-
-    local position = ac.getCar(0).position
+    local positionFromClick = getWorldPositionFromMouseClick()
+    if positionFromClick ~= nil then
+        storage.flame_position = positionFromClick
+    end
+    
     if storage.flame_enabled then
         flame.color = storage.flame_color
         flame.size = storage.flame_size
         flame.temperatureMultiplier = storage.flame_temperatureMultiplier
         flame.flameIntensity = storage.flame_flameIntensity
-        flame:emit(position, storage.flame_velocity, storage.flame_amount)
+        flame:emit(storage.flame_position, storage.flame_velocity, storage.flame_amount)
     end
-    
-    --position.y = position.y + 1.0
 end
 
 ---
