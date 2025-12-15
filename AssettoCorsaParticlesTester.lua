@@ -20,6 +20,7 @@ local ui_pushID = ui.pushID
 local ui_popID = ui.popID
 local ui_text = ui.text
 local ui_checkbox = ui.checkbox
+local ui_nextColumn = ui.nextColumn
 local string_format = string.format
 
 
@@ -92,32 +93,76 @@ local flame = ac.Particles.Flame( {
     flameIntensity = storage.flame_flameIntensity
 })
 
--- Function defined in manifest.ini
--- wiki: function to be called each frame to draw window content
----
-function script.MANIFEST__FUNCTION_MAIN(dt)
-    ui_columns(2, true, "sections")
-    ui_setColumnWidth(0, 560)
+local waitingForClick_Flames = false
 
+local renderFlamesSection = function()
     ui_newLine(1)
     ui_dwriteText('Flames', UI_HEADER_TEXT_FONT_SIZE)
     ui_newLine(1)
 
     if ui_checkbox('Enabled', storage.flame_enabled) then storage.flame_enabled = not storage.flame_enabled end
+
+    ui_newLine(1)
+    --ui_newLine(1)
+    
+    -- ui_text('Position: ')
+    -- ui_sameLine()
+    ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.flame_position.x, storage.flame_position.y, storage.flame_position.z))
+    
+    --ui_newLine(1)
+    ui_sameLine()
+    
+    local buttonText = waitingForClick_Flames and 'Click anywhere in the world...' or 'Set Position'
+
+    if ui.button(buttonText) then
+        waitingForClick_Flames = true
+    end
     
     ui_newLine(1)
-    ui_newLine(1)
     
+
     ui_text('Velocity')
     storage.flame_velocity = UIOperations.uiVec3('Velocity', storage.flame_velocity, -100, 100)
-    
+
     ui_newLine(1)
 
     storage.flame_color = UIOperations.renderColorPicker('Color', 'Flame color multiplier\n\nFor red/yellow/blue adjustment use `Temperature Multiplier` instead.', storage.flame_color, colorPickerFlags, colorPickerSize)
     storage.flame_size = UIOperations.renderSlider('Size', 'Particles size', storage.flame_size, 0, 50, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 50)
     storage.flame_temperatureMultiplier = UIOperations.renderSlider('Temperature Multiplier', 'Temperature multipler to vary base color from red to blue.', storage.flame_temperatureMultiplier, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
     storage.flame_flameIntensity = UIOperations.renderSlider('Flame Intensity', 'Flame intensity affecting flame look and behaviour.', storage.flame_flameIntensity, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
-    storage.flame_amount = UIOperations.renderSlider('Amount', 'The description', storage.flame_amount, 1, 10, DEFAULT_SLIDER_WIDTH, '%.0f', 1)
+    storage.flame_amount = UIOperations.renderSlider('Amount', 'Not sure what this does', storage.flame_amount, 1, 10, DEFAULT_SLIDER_WIDTH, '%.0f', 1)
+end
+
+local renderSparksSection = function()
+    ui_newLine(1)
+    ui_dwriteText('Sparks', UI_HEADER_TEXT_FONT_SIZE)
+    ui_newLine(1)
+end
+
+local renderSmokeSection = function()
+    ui_newLine(1)
+    ui_dwriteText('Smoke', UI_HEADER_TEXT_FONT_SIZE)
+    ui_newLine(1)
+end
+
+-- Function defined in manifest.ini
+-- wiki: function to be called each frame to draw window content
+---
+function script.MANIFEST__FUNCTION_MAIN(dt)
+    ui_columns(3, true, "sections")
+    ui_setColumnWidth(0, 370)
+    ui_setColumnWidth(1, 370)
+    ui_setColumnWidth(2, 370)
+
+    renderFlamesSection()
+    
+    ui_nextColumn()
+
+    renderSparksSection()
+    
+    ui_nextColumn()
+    
+    renderSmokeSection()
     
     -- finish the columns
     ui_columns(1, false)
@@ -127,10 +172,19 @@ end
 -- wiki: called after a whole simulation update
 ---
 function script.MANIFEST__UPDATE(dt)
-    local positionFromClick = UIOperations.getWorldPositionFromMouseClick()
-    if positionFromClick ~= nil then
-        storage.flame_position = positionFromClick
+    if waitingForClick_Flames then
+        local worldPositionFound, out_worldPosition = UIOperations.tryGetWorldPositionFromMouseClick()
+        if worldPositionFound then
+            ac.log('Flame position set to: ' .. tostring(out_worldPosition))
+            storage.flame_position = out_worldPosition
+            waitingForClick_Flames = false
+        end
     end
+    
+    -- local positionFromClick = UIOperations.getWorldPositionFromMouseClick()
+    -- if positionFromClick ~= nil then
+    --     storage.flame_position = positionFromClick
+    -- end
     
     if storage.flame_enabled then
         flame.color = storage.flame_color

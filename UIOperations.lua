@@ -37,20 +37,22 @@ UIOperations.renderColorPicker = function(label, tooltip, color, flags, size)
     return color
 end
 
-UIOperations.getWorldPositionFromMouseClick = function()
+UIOperations.tryGetWorldPositionFromMouseClick = function()
     -- Avoid conflicts if you’re using CSP’s gizmo/positioning helper
-    if render.isPositioningHelperBusy() then return nil end
+    if render.isPositioningHelperBusy() then return false end
 
     -- Only act on a left-click (and avoid UI clicks)
-    if ui.mouseBusy() then return nil end
-    if not ui.mouseClicked(ui.MouseButton.Left) then return nil end
+    if ui.mouseBusy() then return false end
+    if not ui.mouseClicked(ui.MouseButton.Left) then return false end
 
     local ray = render.createMouseRay()
 
     -- Option A: intersect visual track mesh
     local hitDistance = ray:track(1)
     if hitDistance >= 0 then
-        return ray.pos + ray.dir * hitDistance
+        local out_worldPosition = ray.pos + ray.dir * hitDistance
+        -- ac.log(string_format('[UIOperations] Track hit at distance %.2f, world position: (%.2f, %.2f, %.2f)', hitDistance, out_worldPosition.x, out_worldPosition.y, out_worldPosition.z))
+        return true, out_worldPosition
     end
 
     -- Option B: intersect physics meshes (also gives normal if you pass out params)
@@ -59,10 +61,12 @@ UIOperations.getWorldPositionFromMouseClick = function()
     local physDistance = ray:physics(outPos, outNormal)
     if physDistance >= 0 then
         -- outPos already contains the contact point
-        return outPos, outNormal
+        local out_worldPosition = outPos
+        -- ac.log(string_format('[UIOperations] Physics hit at distance %.2f, world position: (%.2f, %.2f, %.2f)', physDistance, out_worldPosition.x, out_worldPosition.y, out_worldPosition.z))
+        return true, out_worldPosition
     end
 
-    return nil
+    return false
 end
 
 ---Renders a slider with a tooltip
