@@ -136,7 +136,7 @@ end
 ---@param format string|'X: %.3f'|'Y: %.3f'|'Z: %.3f'|nil @C-style format string. Default value: `'X: %.3f'`, `'Y: %.3f'`, `'Z: %.3f'
 ---@return vec3 newValue
 ---@return boolean changed
-UIOperations.uiVec3 = function(label, value, minValue, maxValue, format)
+UIOperations.renderVec3Sliders = function(label, value, minValue, maxValue, format)
     ui_pushID(label)
 
     local x = UIOperations.renderSlider('##x', '', value.x, minValue, maxValue, 350, format or 'X: %.3f', 0)
