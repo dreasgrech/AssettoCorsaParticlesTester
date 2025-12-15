@@ -79,6 +79,8 @@ StorageManager.Options = {
     Smoke_SpreadK = 27,
     Smoke_GrowK = 28,
     Smoke_TargetYVelocity = 29,
+    Smoke_DisableCollisions = 30,
+    Smoke_FadeIn = 31,
 }
 
 -- only used to fill in DoD tables, memory freed right after
@@ -114,6 +116,8 @@ local optionsCollection_beforeDoD = {
     { name = StorageManager.Options.Smoke_GrowK, default=1.0, min=0, max=10, label='Grow K', tooltip='How fast smoke expands.' },
     { name = StorageManager.Options.Smoke_TargetYVelocity, default=0.0, min=-100, max=100, label='Target Y Velocity', tooltip='Neutral vertical velocity. Set above zero for hot gasses and below zero for cold, to collect at the bottom.' },
     { name = StorageManager.Options.Smoke_Amount, default=1, min=1, max=10, label='Amount', tooltip='The amount of particles emitted' },
+    { name = StorageManager.Options.Smoke_DisableCollisions, default=false, min=nil, max=nil, label='Disable Collisions', tooltip='Disable smoke collisions with the environment' },
+    { name = StorageManager.Options.Smoke_FadeIn, default=false, min=nil, max=nil, label='Fade In', tooltip='Enable smoke fade-in effect' },
 }
 
 -- -- Since the label is used as an identifier in the ui elements, make sure we only have unique labels (otherwise the ui elements will conflict)
@@ -171,6 +175,8 @@ optionsCollection_beforeDoD = nil  -- free memory
 ---@field smoke_growK number
 ---@field smoke_targetYVelocity number
 ---@field smoke_amount number
+---@field smoke_disableCollisions boolean
+---@field smoke_fadeIn boolean
 
 ---@type StorageTable
 local storageTable = {
@@ -205,6 +211,8 @@ local storageTable = {
     smoke_growK = StorageManager.options_default[StorageManager.Options.Smoke_GrowK],
     smoke_targetYVelocity = StorageManager.options_default[StorageManager.Options.Smoke_TargetYVelocity],
     smoke_amount = StorageManager.options_default[StorageManager.Options.Smoke_Amount],
+    smoke_disableCollisions = StorageManager.options_default[StorageManager.Options.Smoke_DisableCollisions],
+    smoke_fadeIn = StorageManager.options_default[StorageManager.Options.Smoke_FadeIn]
 }
 
 ---@type StorageTable

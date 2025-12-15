@@ -20,7 +20,6 @@ local ui_sameLine = ui.sameLine
 local ui_pushID = ui.pushID
 local ui_popID = ui.popID
 local ui_text = ui.text
-local ui_checkbox = ui.checkbox
 local ui_nextColumn = ui.nextColumn
 local string_format = string.format
 
@@ -87,7 +86,7 @@ local smoke = ac.Particles.Smoke({
     size = storage.smoke_size,
     spreadK = storage.smoke_spreadK,
     growK = storage.smoke_growK,
-    targetYVelocity = storage.smoke_targetYVelocity
+    targetYVelocity = storage.smoke_targetYVelocity,
 })
 
 local waitingForClick_Flames = false
@@ -113,7 +112,7 @@ local renderFlamesSection = function()
     ui_newLine(1)
 
     -- Enabled
-    if ui_checkbox(StorageManager__options_label[StorageManager.Options.Flame_Enabled], storage.flame_enabled) then storage.flame_enabled = not storage.flame_enabled end
+    storage.flame_enabled = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Flame_Enabled], StorageManager__options_tooltip[StorageManager.Options.Flame_Enabled], storage.flame_enabled, StorageManager__options_default[StorageManager.Options.Flame_Enabled])
 
     ui_newLine(1)
     
@@ -155,7 +154,7 @@ local renderSparksSection = function()
     ui_newLine(1)
     
     -- Enabled
-    if ui_checkbox(StorageManager__options_label[StorageManager.Options.Sparks_Enabled], storage.sparks_enabled) then storage.sparks_enabled = not storage.sparks_enabled end
+    storage.sparks_enabled = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Sparks_Enabled], StorageManager__options_tooltip[StorageManager.Options.Sparks_Enabled], storage.sparks_enabled, StorageManager__options_default[StorageManager.Options.Sparks_Enabled])
     
     ui_newLine(1)
 
@@ -197,8 +196,9 @@ local renderSmokeSection = function()
     ui_dwriteText('Smoke', UI_HEADER_TEXT_FONT_SIZE)
     ui_newLine(1)
     
+    
     -- Enabled
-    if ui_checkbox(StorageManager__options_label[StorageManager.Options.Smoke_Enabled], storage.smoke_enabled) then storage.smoke_enabled = not storage.smoke_enabled end
+    storage.smoke_enabled = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Smoke_Enabled], StorageManager__options_tooltip[StorageManager.Options.Smoke_Enabled], storage.smoke_enabled, StorageManager__options_default[StorageManager.Options.Smoke_Enabled])
     
     ui_newLine(1)
     
@@ -232,6 +232,9 @@ local renderSmokeSection = function()
         storage.smoke_spreadK = renderOptionSlider(StorageManager.Options.Smoke_SpreadK, storage.smoke_spreadK)
         storage.smoke_growK = renderOptionSlider(StorageManager.Options.Smoke_GrowK, storage.smoke_growK)
         storage.smoke_targetYVelocity = renderOptionSlider(StorageManager.Options.Smoke_TargetYVelocity, storage.smoke_targetYVelocity)
+        ui_newLine(1)
+        storage.smoke_disableCollisions = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Smoke_DisableCollisions], StorageManager__options_tooltip[StorageManager.Options.Smoke_DisableCollisions], storage.smoke_disableCollisions, StorageManager__options_default[StorageManager.Options.Smoke_DisableCollisions])
+        storage.smoke_fadeIn = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Smoke_FadeIn], StorageManager__options_tooltip[StorageManager.Options.Smoke_FadeIn], storage.smoke_fadeIn, StorageManager__options_default[StorageManager.Options.Smoke_FadeIn])
     end)
     
     ui.popID()
@@ -259,6 +262,11 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     -- finish the columns
     ui_columns(1, false)
 end
+
+-- ac.Particles.SmokeFlags = { FadeIn = 1, DisableCollisions = 256 }
+-- smoke.flags = bit.bor(smoke.flags, ac.Particles.SmokeFlags.DisableCollisions)
+-- smoke.flags = bit.bor(smoke.flags, ac.Particles.SmokeFlags.FadeIn)
+-- ac.log('Smoke flags: ' .. tostring(smoke.flags))
 
 ---
 -- wiki: called after a whole simulation update
@@ -317,6 +325,16 @@ function script.MANIFEST__UPDATE(dt)
         smoke.spreadK = storage.smoke_spreadK
         smoke.growK = storage.smoke_growK
         smoke.targetYVelocity = storage.smoke_targetYVelocity
+        
+        local flags = 0
+        if storage.smoke_disableCollisions then
+            flags = bit.bor(flags, ac.Particles.SmokeFlags.DisableCollisions)
+        end
+        if storage.smoke_fadeIn then
+            flags = bit.bor(flags, ac.Particles.SmokeFlags.FadeIn)
+        end
+        smoke.flags = flags
+        
         smoke:emit(storage.smoke_position, storage.smoke_velocity, storage.smoke_amount)
     end
 end

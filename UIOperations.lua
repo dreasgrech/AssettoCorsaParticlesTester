@@ -13,6 +13,7 @@ local ui_pushID = ui.pushID
 local ui_popID = ui.popID
 local ui_pushDisabled = ui.pushDisabled
 local ui_popDisabled = ui.popDisabled
+local ui_checkbox = ui.checkbox
 local string_format = string.format
 local render = render
 
@@ -110,6 +111,21 @@ UIOperations.renderSlider = function(label, tooltip, value, minValue, maxValue, 
     end
 
     return newValue
+end
+
+UIOperations.renderCheckbox = function(label, tooltip, value, defaultValue)
+    if ui_checkbox(label, value) then
+        value = not value
+    end
+    
+    if ui_itemHovered() then
+        tooltip = string_format('%s\n\nDefault: %s', tooltip, tostring(defaultValue))
+
+        -- render the tooltip
+        ui_setTooltip(tooltip)
+    end
+    
+    return value
 end
 
 ---Renders vec3 sliders
