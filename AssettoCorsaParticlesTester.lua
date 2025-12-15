@@ -71,7 +71,16 @@ local flame = ac.Particles.Flame( {
     flameIntensity = storage.flame_flameIntensity
 })
 
+local sparks = ac.Particles.Sparks({
+    color = storage.sparks_color,
+    life = storage.sparks_life,
+    size = storage.sparks_size,
+    directionSpread = storage.sparks_directionSpread,
+    positionSpread = storage.sparks_positionSpread
+})
+
 local waitingForClick_Flames = false
+local waitingForClick_Sparks = false
 
 local StorageManager__options_label = StorageManager.options_label
 local StorageManager__options_tooltip = StorageManager.options_tooltip
@@ -86,6 +95,8 @@ local renderOptionSlider = function(optionType, currentValue)
 end
 
 local renderFlamesSection = function()
+    ui.pushID("FlamesSection")
+    
     ui_dwriteText('Flames', UI_HEADER_TEXT_FONT_SIZE)
     ui_newLine(1)
 
@@ -120,16 +131,59 @@ local renderFlamesSection = function()
         storage.flame_flameIntensity = renderOptionSlider(StorageManager.Options.Flame_FlameIntensity, storage.flame_flameIntensity)
         storage.flame_amount = renderOptionSlider(StorageManager.Options.Flame_Amount, storage.flame_amount)
     end)
+    
+    ui.popID()
 end
 
 local renderSparksSection = function()
+    ui.pushID("SparksSection")
+    
     ui_dwriteText('Sparks', UI_HEADER_TEXT_FONT_SIZE)
     ui_newLine(1)
+    
+    -- Enabled
+    if ui_checkbox(StorageManager__options_label[StorageManager.Options.Sparks_Enabled], storage.sparks_enabled) then storage.sparks_enabled = not storage.sparks_enabled end
+    
+    ui_newLine(1)
+
+    UIOperations.createDisabledSection(not storage.sparks_enabled, function()
+        -- Show the position value label
+        ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.sparks_position.x, storage.sparks_position.y, storage.sparks_position.z))
+        
+        ui_sameLine()
+        
+        local buttonText = waitingForClick_Sparks and 'Click in the world' or 'Set Position'
+
+        if ui.button(buttonText) then
+            waitingForClick_Sparks = true
+        end
+
+        ui_newLine(1)
+        
+        -- Velocity
+        ui_text(StorageManager__options_label[StorageManager.Options.Sparks_Velocity])
+        storage.sparks_velocity = UIOperations.uiVec3(StorageManager__options_label[StorageManager.Options.Sparks_Velocity], storage.sparks_velocity, StorageManager__options_min[StorageManager.Options.Sparks_Velocity], StorageManager__options_max[StorageManager.Options.Sparks_Velocity])
+        
+        ui_newLine(1)
+
+        storage.sparks_color = UIOperations.renderColorPicker(StorageManager__options_label[StorageManager.Options.Sparks_Color], StorageManager__options_tooltip[StorageManager.Options.Sparks_Color], storage.sparks_color, colorPickerFlags, colorPickerSize)
+        storage.sparks_life = renderOptionSlider(StorageManager.Options.Sparks_Life, storage.sparks_life)
+        storage.sparks_size = renderOptionSlider(StorageManager.Options.Sparks_Size, storage.sparks_size)
+        storage.sparks_directionSpread = renderOptionSlider(StorageManager.Options.Sparks_DirectionSpread, storage.sparks_directionSpread)
+        storage.sparks_positionSpread = renderOptionSlider(StorageManager.Options.Sparks_PositionSpread, storage.sparks_positionSpread)
+        storage.sparks_amount = renderOptionSlider(StorageManager.Options.Sparks_Amount, storage.sparks_amount)
+    end)
+    
+    ui.popID()
 end
 
 local renderSmokeSection = function()
+    ui.pushID("SmokeSection")
+    
     ui_dwriteText('Smoke', UI_HEADER_TEXT_FONT_SIZE)
     ui_newLine(1)
+    
+    ui.popID()
 end
 
 -- Function defined in manifest.ini
@@ -168,12 +222,30 @@ function script.MANIFEST__UPDATE(dt)
         end
     end
     
+    if waitingForClick_Sparks then
+        local worldPositionFound, out_worldPosition = UIOperations.tryGetWorldPositionFromMouseClick()
+        if worldPositionFound then
+            ac.log('Sparks position set to: ' .. tostring(out_worldPosition))
+            storage.sparks_position = out_worldPosition
+            waitingForClick_Sparks = false
+        end
+    end
+    
     if storage.flame_enabled then
         flame.color = storage.flame_color
         flame.size = storage.flame_size
         flame.temperatureMultiplier = storage.flame_temperatureMultiplier
         flame.flameIntensity = storage.flame_flameIntensity
         flame:emit(storage.flame_position, storage.flame_velocity, storage.flame_amount)
+    end
+    
+    if storage.sparks_enabled then
+        sparks.color = storage.sparks_color
+        sparks.life = storage.sparks_life
+        sparks.size = storage.sparks_size
+        sparks.directionSpread = storage.sparks_directionSpread
+        sparks.positionSpread = storage.sparks_positionSpread
+        sparks:emit(storage.sparks_position, storage.sparks_velocity, storage.sparks_amount)
     end
 end
 

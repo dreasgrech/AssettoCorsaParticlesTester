@@ -90,7 +90,8 @@ UIOperations.renderSlider = function(label, tooltip, value, minValue, maxValue, 
 
     -- render the slider
     -- Andreas: doing the ' ' .. label thing here because when writing a label after the slider manually, there's an extra space so here I'm adding an extra space so they can match
-    local newValue = ui_slider(' ' .. label, value, minValue, maxValue, labelFormat)
+    --local newValue = ui_slider(' ' .. label, value, minValue, maxValue, labelFormat)
+    local newValue = ui_slider(label, value, minValue, maxValue, labelFormat)
 
     -- reset the item width
     ui_popItemWidth()

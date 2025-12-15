@@ -19,6 +19,33 @@ local fillInDoDTables = function(collection_beforeDoD, options_default, options_
     return options_default, options_min, options_max, options_label, options_tooltip
 end
 
+--[======[
+---Flame emitter holding specialized settings. Set settings in a table when creating an emitter and/or change them later.
+---Use `:emit(position, velocity, amount)` to actually emit flames.
+---@param params {color: rgbm, size: number, temperatureMultiplier: number, flameIntensity: number}|`{color = rgbm(0.5, 0.5, 0.5, 0.5), size = 0.2, temperatureMultiplier = 1, flameIntensity = 0}` "Table with properties:\n- `color` (`rgbm`): Flame color multiplier (for red/yellow/blue adjustment use `temperatureMultiplier` instead).\n- `size` (`number`): Particles size. Default value: 0.2.\n- `temperatureMultiplier` (`number`): Temperature multipler to vary base color from red to blue. Default value: 1.\n- `flameIntensity` (`number`): Flame intensity affecting flame look and behaviour. Default value: 0."
+---@return ac.Particles.Flame
+function ac.Particles.Flame(params) end
+
+
+
+---Sparks emitter holding specialized settings. Set settings in a table when creating an emitter and/or change them later.
+---Use `:emit(position, velocity, amount)` to actually emit sparks.
+---@param params {color: rgbm, life: number, size: number, directionSpread: number, positionSpread: number}|`{color = rgbm(0.5, 0.5, 0.5, 0.5), life = 4, size = 0.2, directionSpread = 1, positionSpread = 0.2}` "Table with properties:\n- `color` (`rgbm`): Sparks color.\n- `life` (`number`): Base lifetime. Default value: 4.\n- `size` (`number`): Base size. Default value: 0.2.\n- `directionSpread` (`number`): How much sparks directions vary. Default value: 1.\n- `positionSpread` (`number`): How much sparks position vary. Default value: 0.2."
+---@return ac.Particles.Sparks
+function ac.Particles.Sparks(params) end
+
+
+
+---Smoke flags for emitters.
+ac.Particles.SmokeFlags = { FadeIn = 1, DisableCollisions = 256 }
+
+---Smoke emitter holding specialized settings. Set settings in a table when creating an emitter and/or change them later.
+---Use `:emit(position, velocity, amount)` to actually emit smoke.
+---@param params {color: rgbm, colorConsistency: number, thickness: number, life: number, size: number, spreadK: number, growK: number, targetYVelocity: number}|`{color = rgbm(0.5, 0.5, 0.5, 0.5), colorConsistency = 0.5, thickness = 1, life = 4, size = 0.2, spreadK = 1, growK = 1, targetYVelocity = 0}` "Table with properties:\n- `color` (`rgbm`): Smoke color with values from 0 to 1. Alpha can be used to adjust thickness. Default alpha value: 0.5.\n- `colorConsistency` (`number`): Defines how much color dissipates when smoke expands, from 0 to 1. Default value: 0.5.\n- `thickness` (`number`): How thick is smoke, from 0 to 1. Default value: 1.\n- `life` (`number`): Smoke base lifespan in seconds. Default value: 4.\n- `size` (`number`): Starting particle size in meters. Default value: 0.2.\n- `spreadK` (`number`): How randomized is smoke spawn (mostly, speed and direction). Default value: 1.\n- `growK` (`number`): How fast smoke expands. Default value: 1.\n- `targetYVelocity` (`number`): Neutral vertical velocity. Set above zero for hot gasses and below zero for cold, to collect at the bottom. Default value: 0."
+---@return ac.Particles.Smoke
+function ac.Particles.Smoke(params) end
+--]======]
+
 ---@enum StorageManager.Options
 StorageManager.Options = {
     Flame_Enabled = 1,
@@ -28,7 +55,17 @@ StorageManager.Options = {
     Flame_Size = 5,
     Flame_TemperatureMultiplier = 6,
     Flame_FlameIntensity = 7,
-    Flame_Amount = 8
+    Flame_Amount = 8,
+    
+    Sparks_Enabled = 9,
+    Sparks_Position = 10,
+    Sparks_Velocity = 11,
+    Sparks_Color = 12,
+    Sparks_Life = 13,
+    Sparks_Size = 14,
+    Sparks_DirectionSpread = 15,
+    Sparks_PositionSpread = 16,
+    Sparks_Amount = 17,
 }
 
 -- only used to fill in DoD tables, memory freed right after
@@ -40,8 +77,31 @@ local optionsCollection_beforeDoD = {
     { name = StorageManager.Options.Flame_Size, default=0.2, min=0, max=50, label='Size', tooltip='Particles size' },
     { name = StorageManager.Options.Flame_TemperatureMultiplier, default=1.0, min=0, max=10, label='Temperature Multiplier', tooltip='Temperature multipler to vary base color from red to blue.' },
     { name = StorageManager.Options.Flame_FlameIntensity, default=0.0, min=0, max=10, label='Flame Intensity', tooltip='Flame intensity affecting flame look and behaviour.' },
-    { name = StorageManager.Options.Flame_Amount, default=1, min=1, max=10, label='Amount', tooltip='Not sure what this does' }
+    { name = StorageManager.Options.Flame_Amount, default=1, min=1, max=10, label='Amount', tooltip='Not sure what this does' },
+    
+    { name = StorageManager.Options.Sparks_Enabled, default=true, min=nil, max=nil, label='Enabled', tooltip='Enable Sparks' },
+    { name = StorageManager.Options.Sparks_Position, default=vec3(0,0,0), min=nil, max=nil, label='Position', tooltip='Sparks position in world coordinates' },
+    { name = StorageManager.Options.Sparks_Velocity, default=vec3(0,1,0), min=-100, max=100, label='Velocity', tooltip='Sparks initial velocity' },
+    { name = StorageManager.Options.Sparks_Color, default=rgbm(0.5, 0.5, 0.5, 0.5), min=nil, max=nil, label='Color', tooltip='Sparks color' },
+    { name = StorageManager.Options.Sparks_Life, default=4.0, min=0, max=100, label='Life', tooltip='Base lifetime' },
+    { name = StorageManager.Options.Sparks_Size, default=0.2, min=0, max=50, label='Size', tooltip='Base size' },
+    { name = StorageManager.Options.Sparks_DirectionSpread, default=1.0, min=0, max=10, label='Direction Spread', tooltip='How much sparks directions vary' },
+    { name = StorageManager.Options.Sparks_PositionSpread, default=0.2, min=0, max=10, label='Position Spread', tooltip='How much sparks position vary' },
+    { name = StorageManager.Options.Sparks_Amount, default=1, min=1, max=10, label='Amount', tooltip='Not sure what this does' },
 }
+
+-- -- Since the label is used as an identifier in the ui elements, make sure we only have unique labels (otherwise the ui elements will conflict)
+-- UPDATE: Andreas: solved by using ui.pushID/popID around each section
+-- local labelsSet = {}
+-- for _, option in ipairs(optionsCollection_beforeDoD) do
+--     local label = option.label
+--     if labelsSet[label] then
+--         ac.warn(string.format("[StorageManager] Duplicate label found in options: '%s'. Please ensure all labels are unique.", label))
+--     end
+--     
+--     labelsSet[label] = true
+-- end
+
 
 StorageManager.options_default,
 StorageManager.options_min,
@@ -64,6 +124,15 @@ optionsCollection_beforeDoD = nil  -- free memory
 ---@field flame_temperatureMultiplier number
 ---@field flame_flameIntensity number
 ---@field flame_amount number
+---@field sparks_enabled boolean
+---@field sparks_position vec3
+---@field sparks_velocity vec3
+---@field sparks_color rgbm
+---@field sparks_life number
+---@field sparks_size number
+---@field sparks_directionSpread number
+---@field sparks_positionSpread number
+---@field sparks_amount number
 
 ---@type StorageTable
 local storageTable = {
@@ -75,11 +144,22 @@ local storageTable = {
     flame_temperatureMultiplier = StorageManager.options_default[StorageManager.Options.Flame_TemperatureMultiplier],
     flame_flameIntensity = StorageManager.options_default[StorageManager.Options.Flame_FlameIntensity],
     flame_amount = StorageManager.options_default[StorageManager.Options.Flame_Amount],
+    
+    sparks_enabled = StorageManager.options_default[StorageManager.Options.Sparks_Enabled],
+    sparks_position = StorageManager.options_default[StorageManager.Options.Sparks_Position],
+    sparks_velocity = StorageManager.options_default[StorageManager.Options.Sparks_Velocity],
+    sparks_color = StorageManager.options_default[StorageManager.Options.Sparks_Color],
+    sparks_life = StorageManager.options_default[StorageManager.Options.Sparks_Life],
+    sparks_size = StorageManager.options_default[StorageManager.Options.Sparks_Size],
+    sparks_directionSpread = StorageManager.options_default[StorageManager.Options.Sparks_DirectionSpread],
+    sparks_positionSpread = StorageManager.options_default[StorageManager.Options.Sparks_PositionSpread],
+    sparks_amount = StorageManager.options_default[StorageManager.Options.Sparks_Amount],
 }
 
 ---@type StorageTable
 local storage = ac.storage(storageTable, "global")
 
+---@return StorageTable
 StorageManager.getStorage = function()
     return storage
 end
