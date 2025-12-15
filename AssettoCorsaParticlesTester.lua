@@ -1,3 +1,4 @@
+StorageManager = require('StorageManager')
 UIOperations = require('UIOperations')
 
 -- local bindings
@@ -55,30 +56,7 @@ ac.Particles.SmokeFlags = { FadeIn = 1, DisableCollisions = 256 }
 function ac.Particles.Smoke(params) end
 --]======]
 
----@class StorageTable
----@field flame_enabled boolean
----@field flame_position vec3
----@field flame_velocity vec3
----@field flame_color rgbm
----@field flame_size number
----@field flame_temperatureMultiplier number
----@field flame_flameIntensity number
----@field flame_amount number
-
----@type StorageTable
-local storageTable = {
-    flame_enabled = true,
-    flame_position = vec3(0, 0, 0),
-    flame_velocity = vec3(0, 1, 0),
-    flame_color = rgbm(0.5, 0.5, 0.5, 0.5), -- value from lib.lua
-    flame_size = 0.2, -- value from lib.lua
-    flame_temperatureMultiplier = 1.0, -- value from lib.lua
-    flame_flameIntensity = 0.0, -- value from lib.lua
-    flame_amount = 1
-}
-
----@type StorageTable
-local storage = ac.storage(storageTable, "global")
+local storage = StorageManager.getStorage()
 
 ---@type ui.ColorPickerFlags
 local colorPickerFlags = bit.bor(
@@ -95,12 +73,24 @@ local flame = ac.Particles.Flame( {
 
 local waitingForClick_Flames = false
 
+local StorageManager__options_label = StorageManager.options_label
+local StorageManager__options_tooltip = StorageManager.options_tooltip
+local StorageManager__options_default = StorageManager.options_default
+local StorageManager__options_min = StorageManager.options_min
+local StorageManager__options_max = StorageManager.options_max
+
+---
+---@param optionType StorageManager.Options
+local renderSlider = function(optionType, currentValue)
+    return UIOperations.renderSlider(StorageManager__options_label[optionType], StorageManager__options_tooltip[optionType], currentValue, StorageManager__options_min[optionType], StorageManager__options_max[optionType], DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, StorageManager__options_default[optionType])
+end
+
 local renderFlamesSection = function()
     ui_newLine(1)
     ui_dwriteText('Flames', UI_HEADER_TEXT_FONT_SIZE)
     ui_newLine(1)
 
-    if ui_checkbox('Enabled', storage.flame_enabled) then storage.flame_enabled = not storage.flame_enabled end
+    if ui_checkbox(StorageManager__options_label[StorageManager.Options.Flame_Enabled], storage.flame_enabled) then storage.flame_enabled = not storage.flame_enabled end
 
     ui_newLine(1)
     --ui_newLine(1)
@@ -122,15 +112,15 @@ local renderFlamesSection = function()
     
 
     ui_text('Velocity')
-    storage.flame_velocity = UIOperations.uiVec3('Velocity', storage.flame_velocity, -100, 100)
+    storage.flame_velocity = UIOperations.uiVec3(StorageManager__options_label[StorageManager.Options.Flame_Velocity], storage.flame_velocity, StorageManager__options_min[StorageManager.Options.Flame_Velocity], StorageManager__options_max[StorageManager.Options.Flame_Velocity])
 
     ui_newLine(1)
 
-    storage.flame_color = UIOperations.renderColorPicker('Color', 'Flame color multiplier\n\nFor red/yellow/blue adjustment use `Temperature Multiplier` instead.', storage.flame_color, colorPickerFlags, colorPickerSize)
-    storage.flame_size = UIOperations.renderSlider('Size', 'Particles size', storage.flame_size, 0, 50, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 50)
-    storage.flame_temperatureMultiplier = UIOperations.renderSlider('Temperature Multiplier', 'Temperature multipler to vary base color from red to blue.', storage.flame_temperatureMultiplier, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
-    storage.flame_flameIntensity = UIOperations.renderSlider('Flame Intensity', 'Flame intensity affecting flame look and behaviour.', storage.flame_flameIntensity, 0, 10, DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, 1)
-    storage.flame_amount = UIOperations.renderSlider('Amount', 'Not sure what this does', storage.flame_amount, 1, 10, DEFAULT_SLIDER_WIDTH, '%.0f', 1)
+    storage.flame_color = UIOperations.renderColorPicker(StorageManager__options_label[StorageManager.Options.Flame_Color], StorageManager__options_tooltip[StorageManager.Options.Flame_Color], storage.flame_color, colorPickerFlags, colorPickerSize)
+    storage.flame_size = renderSlider(StorageManager.Options.Flame_Size, storage.flame_size)
+    storage.flame_temperatureMultiplier = renderSlider(StorageManager.Options.Flame_TemperatureMultiplier, storage.flame_temperatureMultiplier)
+    storage.flame_flameIntensity = renderSlider(StorageManager.Options.Flame_FlameIntensity, storage.flame_flameIntensity)
+    storage.flame_amount = renderSlider(StorageManager.Options.Flame_Amount, storage.flame_amount)
 end
 
 local renderSparksSection = function()
@@ -180,11 +170,6 @@ function script.MANIFEST__UPDATE(dt)
             waitingForClick_Flames = false
         end
     end
-    
-    -- local positionFromClick = UIOperations.getWorldPositionFromMouseClick()
-    -- if positionFromClick ~= nil then
-    --     storage.flame_position = positionFromClick
-    -- end
     
     if storage.flame_enabled then
         flame.color = storage.flame_color
