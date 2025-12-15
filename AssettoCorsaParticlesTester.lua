@@ -79,8 +79,20 @@ local sparks = ac.Particles.Sparks({
     positionSpread = storage.sparks_positionSpread
 })
 
+local smoke = ac.Particles.Smoke({
+    color = storage.smoke_color,
+    colorConsistency = storage.smoke_colorConsistency,
+    thickness = storage.smoke_thickness,
+    life = storage.smoke_life,
+    size = storage.smoke_size,
+    spreadK = storage.smoke_spreadK,
+    growK = storage.smoke_growK,
+    targetYVelocity = storage.smoke_targetYVelocity
+})
+
 local waitingForClick_Flames = false
 local waitingForClick_Sparks = false
+local waitingForClick_Smoke = false
 
 local StorageManager__options_label = StorageManager.options_label
 local StorageManager__options_tooltip = StorageManager.options_tooltip
@@ -183,6 +195,42 @@ local renderSmokeSection = function()
     ui_dwriteText('Smoke', UI_HEADER_TEXT_FONT_SIZE)
     ui_newLine(1)
     
+    -- Enabled
+    if ui_checkbox(StorageManager__options_label[StorageManager.Options.Smoke_Enabled], storage.smoke_enabled) then storage.smoke_enabled = not storage.smoke_enabled end
+    
+    ui_newLine(1)
+    
+    UIOperations.createDisabledSection(not storage.smoke_enabled, function()
+        -- Show the position value label
+        ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.smoke_position.x, storage.smoke_position.y, storage.smoke_position.z))
+        
+        ui_sameLine()
+        
+        local buttonText = waitingForClick_Smoke and 'Click in the world' or 'Set Position'
+
+        if ui.button(buttonText) then
+            waitingForClick_Smoke = true
+        end
+
+        ui_newLine(1)
+        
+        -- Velocity
+        ui_text(StorageManager__options_label[StorageManager.Options.Smoke_Velocity])
+        storage.smoke_velocity = UIOperations.uiVec3(StorageManager__options_label[StorageManager.Options.Smoke_Velocity], storage.smoke_velocity, StorageManager__options_min[StorageManager.Options.Smoke_Velocity], StorageManager__options_max[StorageManager.Options.Smoke_Velocity])
+        
+        ui_newLine(1)
+
+        storage.smoke_color = UIOperations.renderColorPicker(StorageManager__options_label[StorageManager.Options.Smoke_Color], StorageManager__options_tooltip[StorageManager.Options.Smoke_Color], storage.smoke_color, colorPickerFlags, colorPickerSize)
+        storage.smoke_colorConsistency = renderOptionSlider(StorageManager.Options.Smoke_ColorConsistency, storage.smoke_colorConsistency)
+        storage.smoke_thickness = renderOptionSlider(StorageManager.Options.Smoke_Thickness, storage.smoke_thickness)
+        storage.smoke_life = renderOptionSlider(StorageManager.Options.Smoke_Life, storage.smoke_life)
+        storage.smoke_size = renderOptionSlider(StorageManager.Options.Smoke_Size, storage.smoke_size)
+        storage.smoke_spreadK = renderOptionSlider(StorageManager.Options.Smoke_SpreadK, storage.smoke_spreadK)
+        storage.smoke_growK = renderOptionSlider(StorageManager.Options.Smoke_GrowK, storage.smoke_growK)
+        storage.smoke_targetYVelocity = renderOptionSlider(StorageManager.Options.Smoke_TargetYVelocity, storage.smoke_targetYVelocity)
+        storage.smoke_amount = renderOptionSlider(StorageManager.Options.Smoke_Amount, storage.smoke_amount)
+    end)
+    
     ui.popID()
 end
 
@@ -231,6 +279,15 @@ function script.MANIFEST__UPDATE(dt)
         end
     end
     
+    if waitingForClick_Smoke then
+        local worldPositionFound, out_worldPosition = UIOperations.tryGetWorldPositionFromMouseClick()
+        if worldPositionFound then
+            ac.log('Smoke position set to: ' .. tostring(out_worldPosition))
+            storage.smoke_position = out_worldPosition
+            waitingForClick_Smoke = false
+        end
+    end
+    
     if storage.flame_enabled then
         flame.color = storage.flame_color
         flame.size = storage.flame_size
@@ -246,6 +303,18 @@ function script.MANIFEST__UPDATE(dt)
         sparks.directionSpread = storage.sparks_directionSpread
         sparks.positionSpread = storage.sparks_positionSpread
         sparks:emit(storage.sparks_position, storage.sparks_velocity, storage.sparks_amount)
+    end
+    
+    if storage.smoke_enabled then
+        smoke.color = storage.smoke_color
+        smoke.colorConsistency = storage.smoke_colorConsistency
+        smoke.thickness = storage.smoke_thickness
+        smoke.life = storage.smoke_life
+        smoke.size = storage.smoke_size
+        smoke.spreadK = storage.smoke_spreadK
+        smoke.growK = storage.smoke_growK
+        smoke.targetYVelocity = storage.smoke_targetYVelocity
+        smoke:emit(storage.smoke_position, storage.smoke_velocity, storage.smoke_amount)
     end
 end
 

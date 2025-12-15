@@ -66,6 +66,19 @@ StorageManager.Options = {
     Sparks_DirectionSpread = 15,
     Sparks_PositionSpread = 16,
     Sparks_Amount = 17,
+    
+    Smoke_Enabled = 18,
+    Smoke_Position = 19,
+    Smoke_Velocity = 20,
+    Smoke_Color = 21,
+    Smoke_ColorConsistency = 22,
+    Smoke_Thickness = 23,
+    Smoke_Life = 24,
+    Smoke_Size = 25,
+    Smoke_SpreadK = 26,
+    Smoke_GrowK = 27,
+    Smoke_TargetYVelocity = 28,
+    Smoke_Amount = 29,
 }
 
 -- only used to fill in DoD tables, memory freed right after
@@ -77,7 +90,7 @@ local optionsCollection_beforeDoD = {
     { name = StorageManager.Options.Flame_Size, default=0.2, min=0, max=50, label='Size', tooltip='Particles size' },
     { name = StorageManager.Options.Flame_TemperatureMultiplier, default=1.0, min=0, max=10, label='Temperature Multiplier', tooltip='Temperature multipler to vary base color from red to blue.' },
     { name = StorageManager.Options.Flame_FlameIntensity, default=0.0, min=0, max=10, label='Flame Intensity', tooltip='Flame intensity affecting flame look and behaviour.' },
-    { name = StorageManager.Options.Flame_Amount, default=1, min=1, max=10, label='Amount', tooltip='Not sure what this does' },
+    { name = StorageManager.Options.Flame_Amount, default=1, min=1, max=10, label='Amount', tooltip='The amount of particles emitted' },
     
     { name = StorageManager.Options.Sparks_Enabled, default=true, min=nil, max=nil, label='Enabled', tooltip='Enable Sparks' },
     { name = StorageManager.Options.Sparks_Position, default=vec3(0,0,0), min=nil, max=nil, label='Position', tooltip='Sparks position in world coordinates' },
@@ -87,7 +100,20 @@ local optionsCollection_beforeDoD = {
     { name = StorageManager.Options.Sparks_Size, default=0.2, min=0, max=50, label='Size', tooltip='Base size' },
     { name = StorageManager.Options.Sparks_DirectionSpread, default=1.0, min=0, max=10, label='Direction Spread', tooltip='How much sparks directions vary' },
     { name = StorageManager.Options.Sparks_PositionSpread, default=0.2, min=0, max=10, label='Position Spread', tooltip='How much sparks position vary' },
-    { name = StorageManager.Options.Sparks_Amount, default=1, min=1, max=10, label='Amount', tooltip='Not sure what this does' },
+    { name = StorageManager.Options.Sparks_Amount, default=1, min=1, max=10, label='Amount', tooltip='The amount of particles emitted' },
+    
+    { name = StorageManager.Options.Smoke_Enabled, default=true, min=nil, max=nil, label='Enabled', tooltip='Enable Smoke' },
+    { name = StorageManager.Options.Smoke_Position, default=vec3(0,0,0), min=nil, max=nil, label='Position', tooltip='Smoke position in world coordinates' },
+    { name = StorageManager.Options.Smoke_Velocity, default=vec3(0,1,0), min=-100, max=100, label='Velocity', tooltip='Smoke initial velocity' },
+    { name = StorageManager.Options.Smoke_Color, default=rgbm(0.5, 0.5, 0.5, 0.5), min=nil, max=nil, label='Color', tooltip='Smoke color with values from 0 to 1. Alpha can be used to adjust thickness.' },
+    { name = StorageManager.Options.Smoke_ColorConsistency, default=0.5, min=0, max=1, label='Color Consistency', tooltip='Defines how much color dissipates when smoke expands, from 0 to 1.' },
+    { name = StorageManager.Options.Smoke_Thickness, default=1.0, min=0, max=1, label='Thickness', tooltip='How thick is smoke, from 0 to 1.' },
+    { name = StorageManager.Options.Smoke_Life, default=4.0, min=0, max=100, label='Life', tooltip='Smoke base lifespan in seconds.' },
+    { name = StorageManager.Options.Smoke_Size, default=0.2, min=0, max=50, label='Size', tooltip='Starting particle size in meters.' },
+    { name = StorageManager.Options.Smoke_SpreadK, default=1.0, min=0, max=10, label='Spread K', tooltip='How randomized is smoke spawn (mostly, speed and direction).' },
+    { name = StorageManager.Options.Smoke_GrowK, default=1.0, min=0, max=10, label='Grow K', tooltip='How fast smoke expands.' },
+    { name = StorageManager.Options.Smoke_TargetYVelocity, default=0.0, min=-100, max=100, label='Target Y Velocity', tooltip='Neutral vertical velocity. Set above zero for hot gasses and below zero for cold, to collect at the bottom.' },
+    { name = StorageManager.Options.Smoke_Amount, default=1, min=1, max=10, label='Amount', tooltip='The amount of particles emitted' },
 }
 
 -- -- Since the label is used as an identifier in the ui elements, make sure we only have unique labels (otherwise the ui elements will conflict)
@@ -133,6 +159,18 @@ optionsCollection_beforeDoD = nil  -- free memory
 ---@field sparks_directionSpread number
 ---@field sparks_positionSpread number
 ---@field sparks_amount number
+---@field smoke_enabled boolean
+---@field smoke_position vec3
+---@field smoke_velocity vec3
+---@field smoke_color rgbm
+---@field smoke_colorConsistency number
+---@field smoke_thickness number
+---@field smoke_life number
+---@field smoke_size number
+---@field smoke_spreadK number
+---@field smoke_growK number
+---@field smoke_targetYVelocity number
+---@field smoke_amount number
 
 ---@type StorageTable
 local storageTable = {
@@ -154,6 +192,19 @@ local storageTable = {
     sparks_directionSpread = StorageManager.options_default[StorageManager.Options.Sparks_DirectionSpread],
     sparks_positionSpread = StorageManager.options_default[StorageManager.Options.Sparks_PositionSpread],
     sparks_amount = StorageManager.options_default[StorageManager.Options.Sparks_Amount],
+    
+    smoke_enabled = StorageManager.options_default[StorageManager.Options.Smoke_Enabled],
+    smoke_position = StorageManager.options_default[StorageManager.Options.Smoke_Position],
+    smoke_velocity = StorageManager.options_default[StorageManager.Options.Smoke_Velocity],
+    smoke_color = StorageManager.options_default[StorageManager.Options.Smoke_Color],
+    smoke_colorConsistency = StorageManager.options_default[StorageManager.Options.Smoke_ColorConsistency],
+    smoke_thickness = StorageManager.options_default[StorageManager.Options.Smoke_Thickness],
+    smoke_life = StorageManager.options_default[StorageManager.Options.Smoke_Life],
+    smoke_size = StorageManager.options_default[StorageManager.Options.Smoke_Size],
+    smoke_spreadK = StorageManager.options_default[StorageManager.Options.Smoke_SpreadK],
+    smoke_growK = StorageManager.options_default[StorageManager.Options.Smoke_GrowK],
+    smoke_targetYVelocity = StorageManager.options_default[StorageManager.Options.Smoke_TargetYVelocity],
+    smoke_amount = StorageManager.options_default[StorageManager.Options.Smoke_Amount],
 }
 
 ---@type StorageTable
