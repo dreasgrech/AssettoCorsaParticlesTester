@@ -1,5 +1,6 @@
 StorageManager = require('StorageManager')
 UIOperations = require('UIOperations')
+ExtConfigCodeGenerator = require('ExtConfigCodeGenerator')
 
 -- local bindings
 local ac = ac
@@ -359,3 +360,13 @@ end
 ---
 function script.MANIFEST__TRANSPARENT(dt)
 end
+
+
+local flamesCode = ExtConfigCodeGenerator.generateCodeForFlames(flame, storage.flame_position + storage.flame_positionOffset, storage.flame_velocity)
+ac.log(flamesCode)
+
+local sparksCode = ExtConfigCodeGenerator.generateCodeForSparks(sparks, storage.sparks_position + storage.sparks_positionOffset, storage.sparks_velocity)
+ac.log(sparksCode)
+
+local smokeCode = ExtConfigCodeGenerator.generateCodeForSmoke(smoke, storage.smoke_position + storage.smoke_positionOffset, storage.smoke_velocity)
+ac.log(smokeCode)
