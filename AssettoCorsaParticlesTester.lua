@@ -128,6 +128,10 @@ local renderFlamesSection = function()
             waitingForClick_Flames = true
         end
 
+        -- Position Offset
+        ui_text(StorageManager__options_label[StorageManager.Options.Flame_PositionOffset])
+        storage.flame_positionOffset = UIOperations.uiVec3(StorageManager__options_label[StorageManager.Options.Flame_PositionOffset], storage.flame_positionOffset, StorageManager__options_min[StorageManager.Options.Flame_PositionOffset], StorageManager__options_max[StorageManager.Options.Flame_PositionOffset])
+        
         ui_newLine(1)
 
         -- Velocity
@@ -170,8 +174,12 @@ local renderSparksSection = function()
             waitingForClick_Sparks = true
         end
 
+        -- Position Offset
+        ui_text(StorageManager__options_label[StorageManager.Options.Sparks_PositionOffset])
+        storage.sparks_positionOffset = UIOperations.uiVec3(StorageManager__options_label[StorageManager.Options.Sparks_PositionOffset], storage.sparks_positionOffset, StorageManager__options_min[StorageManager.Options.Sparks_PositionOffset], StorageManager__options_max[StorageManager.Options.Sparks_PositionOffset])
+
         ui_newLine(1)
-        
+
         -- Velocity
         ui_text(StorageManager__options_label[StorageManager.Options.Sparks_Velocity])
         storage.sparks_velocity = UIOperations.uiVec3(StorageManager__options_label[StorageManager.Options.Sparks_Velocity], storage.sparks_velocity, StorageManager__options_min[StorageManager.Options.Sparks_Velocity], StorageManager__options_max[StorageManager.Options.Sparks_Velocity])
@@ -214,8 +222,12 @@ local renderSmokeSection = function()
             waitingForClick_Smoke = true
         end
 
+        -- Position Offset
+        ui_text(StorageManager__options_label[StorageManager.Options.Smoke_PositionOffset])
+        storage.smoke_positionOffset = UIOperations.uiVec3(StorageManager__options_label[StorageManager.Options.Smoke_PositionOffset], storage.smoke_positionOffset, StorageManager__options_min[StorageManager.Options.Smoke_PositionOffset], StorageManager__options_max[StorageManager.Options.Smoke_PositionOffset])
+
         ui_newLine(1)
-        
+
         -- Velocity
         ui_text(StorageManager__options_label[StorageManager.Options.Smoke_Velocity])
         storage.smoke_velocity = UIOperations.uiVec3(StorageManager__options_label[StorageManager.Options.Smoke_Velocity], storage.smoke_velocity, StorageManager__options_min[StorageManager.Options.Smoke_Velocity], StorageManager__options_max[StorageManager.Options.Smoke_Velocity])
@@ -304,7 +316,8 @@ function script.MANIFEST__UPDATE(dt)
         flame.size = storage.flame_size
         flame.temperatureMultiplier = storage.flame_temperatureMultiplier
         flame.flameIntensity = storage.flame_flameIntensity
-        flame:emit(storage.flame_position, storage.flame_velocity, storage.flame_amount)
+        local position = storage.flame_position + storage.flame_positionOffset
+        flame:emit(position, storage.flame_velocity, storage.flame_amount)
     end
     
     if storage.sparks_enabled then
@@ -313,7 +326,8 @@ function script.MANIFEST__UPDATE(dt)
         sparks.size = storage.sparks_size
         sparks.directionSpread = storage.sparks_directionSpread
         sparks.positionSpread = storage.sparks_positionSpread
-        sparks:emit(storage.sparks_position, storage.sparks_velocity, storage.sparks_amount)
+        local position = storage.sparks_position + storage.sparks_positionOffset
+        sparks:emit(position, storage.sparks_velocity, storage.sparks_amount)
     end
     
     if storage.smoke_enabled then
@@ -334,8 +348,9 @@ function script.MANIFEST__UPDATE(dt)
             flags = bit.bor(flags, ac.Particles.SmokeFlags.FadeIn)
         end
         smoke.flags = flags
-        
-        smoke:emit(storage.smoke_position, storage.smoke_velocity, storage.smoke_amount)
+
+        local position = storage.smoke_position + storage.smoke_positionOffset
+        smoke:emit(position, storage.smoke_velocity, storage.smoke_amount)
     end
 end
 

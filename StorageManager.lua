@@ -50,43 +50,47 @@ function ac.Particles.Smoke(params) end
 StorageManager.Options = {
     Flame_Enabled = 1,
     Flame_Position = 2,
-    Flame_Velocity = 3,
-    Flame_Color = 4,
-    Flame_Size = 5,
-    Flame_Amount = 6,
-    Flame_TemperatureMultiplier = 7,
-    Flame_FlameIntensity = 8,
+    Flame_PositionOffset = 3,
+    Flame_Velocity = 4,
+    Flame_Color = 5,
+    Flame_Size = 6,
+    Flame_Amount = 7,
+    Flame_TemperatureMultiplier = 8,
+    Flame_FlameIntensity = 9,
     
-    Sparks_Enabled = 9,
-    Sparks_Position = 10,
-    Sparks_Velocity = 11,
-    Sparks_Color = 12,
-    Sparks_Size = 13,
-    Sparks_Amount = 14,
-    Sparks_Life = 15,
-    Sparks_DirectionSpread = 16,
-    Sparks_PositionSpread = 17,
+    Sparks_Enabled = 10,
+    Sparks_Position = 11,
+    Sparks_PositionOffset = 12,
+    Sparks_Velocity = 13,
+    Sparks_Color = 14,
+    Sparks_Size = 15,
+    Sparks_Amount = 16,
+    Sparks_Life = 17,
+    Sparks_DirectionSpread = 18,
+    Sparks_PositionSpread = 19,
     
-    Smoke_Enabled = 18,
-    Smoke_Position = 19,
-    Smoke_Velocity = 20,
-    Smoke_Color = 21,
-    Smoke_Size = 22,
-    Smoke_Amount = 23,
-    Smoke_ColorConsistency = 24,
-    Smoke_Thickness = 25,
-    Smoke_Life = 26,
-    Smoke_SpreadK = 27,
-    Smoke_GrowK = 28,
-    Smoke_TargetYVelocity = 29,
-    Smoke_DisableCollisions = 30,
-    Smoke_FadeIn = 31,
+    Smoke_Enabled = 20,
+    Smoke_Position = 21,
+    Smoke_PositionOffset = 22,
+    Smoke_Velocity = 23,
+    Smoke_Color = 24,
+    Smoke_Size = 25,
+    Smoke_Amount = 26,
+    Smoke_ColorConsistency = 27,
+    Smoke_Thickness = 28,
+    Smoke_Life = 29,
+    Smoke_SpreadK = 30,
+    Smoke_GrowK = 31,
+    Smoke_TargetYVelocity = 32,
+    Smoke_DisableCollisions = 33,
+    Smoke_FadeIn = 34,
 }
 
 -- only used to fill in DoD tables, memory freed right after
 local optionsCollection_beforeDoD = {
     { name = StorageManager.Options.Flame_Enabled, default=true, min=nil, max=nil, label='Enabled', tooltip='Enable Flames' },
     { name = StorageManager.Options.Flame_Position, default=vec3(0,0,0), min=nil, max=nil, label='Position', tooltip='Flame position in world coordinates' },
+    { name = StorageManager.Options.Flame_PositionOffset, default=vec3(0,0,0), min=-100, max=100, label='Position Offset', tooltip='Offset in position from the base position' },
     { name = StorageManager.Options.Flame_Velocity, default=vec3(0,1,0), min=-100, max=100, label='Velocity', tooltip='Flame initial velocity' },
     { name = StorageManager.Options.Flame_Color, default=rgbm(0.5, 0.5, 0.5, 0.5), min=nil, max=nil, label='Color', tooltip='Flame color multiplier\n\nFor red/yellow/blue adjustment use `Temperature Multiplier` instead.' },
     { name = StorageManager.Options.Flame_Size, default=0.2, min=0, max=50, label='Size', tooltip='Particles size' },
@@ -96,6 +100,7 @@ local optionsCollection_beforeDoD = {
     
     { name = StorageManager.Options.Sparks_Enabled, default=true, min=nil, max=nil, label='Enabled', tooltip='Enable Sparks' },
     { name = StorageManager.Options.Sparks_Position, default=vec3(0,0,0), min=nil, max=nil, label='Position', tooltip='Sparks position in world coordinates' },
+    { name = StorageManager.Options.Sparks_PositionOffset, default=vec3(0,0,0), min=-100, max=100, label='Position Offset', tooltip='Offset in position from the base position' },
     { name = StorageManager.Options.Sparks_Velocity, default=vec3(0,1,0), min=-100, max=100, label='Velocity', tooltip='Sparks initial velocity' },
     { name = StorageManager.Options.Sparks_Color, default=rgbm(0.5, 0.5, 0.5, 0.5), min=nil, max=nil, label='Color', tooltip='Sparks color' },
     { name = StorageManager.Options.Sparks_Life, default=4.0, min=0, max=100, label='Life', tooltip='Base lifetime' },
@@ -106,6 +111,7 @@ local optionsCollection_beforeDoD = {
     
     { name = StorageManager.Options.Smoke_Enabled, default=true, min=nil, max=nil, label='Enabled', tooltip='Enable Smoke' },
     { name = StorageManager.Options.Smoke_Position, default=vec3(0,0,0), min=nil, max=nil, label='Position', tooltip='Smoke position in world coordinates' },
+    { name = StorageManager.Options.Smoke_PositionOffset, default=vec3(0,0,0), min=-100, max=100, label='Position Offset', tooltip='Offset in position from the base position' },
     { name = StorageManager.Options.Smoke_Velocity, default=vec3(0,1,0), min=-100, max=100, label='Velocity', tooltip='Smoke initial velocity' },
     { name = StorageManager.Options.Smoke_Color, default=rgbm(0.5, 0.5, 0.5, 0.5), min=nil, max=nil, label='Color', tooltip='Smoke color with values from 0 to 1. Alpha can be used to adjust thickness.' },
     { name = StorageManager.Options.Smoke_ColorConsistency, default=0.5, min=0, max=1, label='Color Consistency', tooltip='Defines how much color dissipates when smoke expands, from 0 to 1.' },
@@ -148,6 +154,7 @@ optionsCollection_beforeDoD = nil  -- free memory
 ---@class StorageTable
 ---@field flame_enabled boolean
 ---@field flame_position vec3
+---@field flame_positionOffset vec3
 ---@field flame_velocity vec3
 ---@field flame_color rgbm
 ---@field flame_size number
@@ -156,6 +163,7 @@ optionsCollection_beforeDoD = nil  -- free memory
 ---@field flame_amount number
 ---@field sparks_enabled boolean
 ---@field sparks_position vec3
+---@field sparks_positionOffset vec3
 ---@field sparks_velocity vec3
 ---@field sparks_color rgbm
 ---@field sparks_life number
@@ -165,6 +173,7 @@ optionsCollection_beforeDoD = nil  -- free memory
 ---@field sparks_amount number
 ---@field smoke_enabled boolean
 ---@field smoke_position vec3
+---@field smoke_positionOffset vec3
 ---@field smoke_velocity vec3
 ---@field smoke_color rgbm
 ---@field smoke_colorConsistency number
@@ -182,6 +191,7 @@ optionsCollection_beforeDoD = nil  -- free memory
 local storageTable = {
     flame_enabled = StorageManager.options_default[StorageManager.Options.Flame_Enabled],
     flame_position = StorageManager.options_default[StorageManager.Options.Flame_Position],
+    flame_positionOffset = StorageManager.options_default[StorageManager.Options.Flame_PositionOffset],
     flame_velocity = StorageManager.options_default[StorageManager.Options.Flame_Velocity],
     flame_color = StorageManager.options_default[StorageManager.Options.Flame_Color],
     flame_size = StorageManager.options_default[StorageManager.Options.Flame_Size],
@@ -191,6 +201,7 @@ local storageTable = {
     
     sparks_enabled = StorageManager.options_default[StorageManager.Options.Sparks_Enabled],
     sparks_position = StorageManager.options_default[StorageManager.Options.Sparks_Position],
+    sparks_positionOffset = StorageManager.options_default[StorageManager.Options.Sparks_PositionOffset],
     sparks_velocity = StorageManager.options_default[StorageManager.Options.Sparks_Velocity],
     sparks_color = StorageManager.options_default[StorageManager.Options.Sparks_Color],
     sparks_life = StorageManager.options_default[StorageManager.Options.Sparks_Life],
@@ -201,6 +212,7 @@ local storageTable = {
     
     smoke_enabled = StorageManager.options_default[StorageManager.Options.Smoke_Enabled],
     smoke_position = StorageManager.options_default[StorageManager.Options.Smoke_Position],
+    smoke_positionOffset = StorageManager.options_default[StorageManager.Options.Smoke_PositionOffset],
     smoke_velocity = StorageManager.options_default[StorageManager.Options.Smoke_Velocity],
     smoke_color = StorageManager.options_default[StorageManager.Options.Smoke_Color],
     smoke_colorConsistency = StorageManager.options_default[StorageManager.Options.Smoke_ColorConsistency],
