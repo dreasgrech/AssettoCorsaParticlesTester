@@ -11,6 +11,8 @@ local ui_mouseClicked = ui.mouseClicked
 local ui_MouseButton = ui.MouseButton
 local ui_pushID = ui.pushID
 local ui_popID = ui.popID
+local ui_pushDisabled = ui.pushDisabled
+local ui_popDisabled = ui.popDisabled
 local string_format = string.format
 local render = render
 
@@ -129,6 +131,21 @@ UIOperations.uiVec3 = function(label, value, minValue, maxValue, format)
     ui_popID()
 
     return vec3(x, y, z)
+end
+
+--- Creates a disabled section in the UI.
+---@param createSection boolean @If true, will create a disabled section.
+---@param callback function @Function to call to render the contents of the section.
+UIOperations.createDisabledSection = function(createSection, callback)
+    if createSection then
+        ui_pushDisabled()
+    end
+
+    callback()
+
+    if createSection then
+        ui_popDisabled()
+    end
 end
 
 return UIOperations

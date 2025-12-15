@@ -19,7 +19,7 @@ local fillInDoDTables = function(collection_beforeDoD, options_default, options_
     return options_default, options_min, options_max, options_label, options_tooltip
 end
 
----@enum Options
+---@enum StorageManager.Options
 StorageManager.Options = {
     Flame_Enabled = 1,
     Flame_Position = 2,

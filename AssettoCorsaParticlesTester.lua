@@ -81,56 +81,53 @@ local StorageManager__options_max = StorageManager.options_max
 
 ---
 ---@param optionType StorageManager.Options
-local renderSlider = function(optionType, currentValue)
+local renderOptionSlider = function(optionType, currentValue)
     return UIOperations.renderSlider(StorageManager__options_label[optionType], StorageManager__options_tooltip[optionType], currentValue, StorageManager__options_min[optionType], StorageManager__options_max[optionType], DEFAULT_SLIDER_WIDTH, DEFAULT_SLIDER_FORMAT, StorageManager__options_default[optionType])
 end
 
 local renderFlamesSection = function()
-    ui_newLine(1)
     ui_dwriteText('Flames', UI_HEADER_TEXT_FONT_SIZE)
     ui_newLine(1)
 
+    -- Enabled
     if ui_checkbox(StorageManager__options_label[StorageManager.Options.Flame_Enabled], storage.flame_enabled) then storage.flame_enabled = not storage.flame_enabled end
 
     ui_newLine(1)
-    --ui_newLine(1)
     
-    -- ui_text('Position: ')
-    -- ui_sameLine()
-    ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.flame_position.x, storage.flame_position.y, storage.flame_position.z))
-    
-    --ui_newLine(1)
-    ui_sameLine()
-    
-    local buttonText = waitingForClick_Flames and 'Click anywhere in the world...' or 'Set Position'
+    UIOperations.createDisabledSection(not storage.flame_enabled, function()
+        -- Show the position value label
+        ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.flame_position.x, storage.flame_position.y, storage.flame_position.z))
 
-    if ui.button(buttonText) then
-        waitingForClick_Flames = true
-    end
-    
-    ui_newLine(1)
-    
+        ui_sameLine()
 
-    ui_text('Velocity')
-    storage.flame_velocity = UIOperations.uiVec3(StorageManager__options_label[StorageManager.Options.Flame_Velocity], storage.flame_velocity, StorageManager__options_min[StorageManager.Options.Flame_Velocity], StorageManager__options_max[StorageManager.Options.Flame_Velocity])
+        local buttonText = waitingForClick_Flames and 'Click in the world' or 'Set Position'
 
-    ui_newLine(1)
+        if ui.button(buttonText) then
+            waitingForClick_Flames = true
+        end
 
-    storage.flame_color = UIOperations.renderColorPicker(StorageManager__options_label[StorageManager.Options.Flame_Color], StorageManager__options_tooltip[StorageManager.Options.Flame_Color], storage.flame_color, colorPickerFlags, colorPickerSize)
-    storage.flame_size = renderSlider(StorageManager.Options.Flame_Size, storage.flame_size)
-    storage.flame_temperatureMultiplier = renderSlider(StorageManager.Options.Flame_TemperatureMultiplier, storage.flame_temperatureMultiplier)
-    storage.flame_flameIntensity = renderSlider(StorageManager.Options.Flame_FlameIntensity, storage.flame_flameIntensity)
-    storage.flame_amount = renderSlider(StorageManager.Options.Flame_Amount, storage.flame_amount)
+        ui_newLine(1)
+
+        -- Velocity
+        ui_text(StorageManager__options_label[StorageManager.Options.Flame_Velocity])
+        storage.flame_velocity = UIOperations.uiVec3(StorageManager__options_label[StorageManager.Options.Flame_Velocity], storage.flame_velocity, StorageManager__options_min[StorageManager.Options.Flame_Velocity], StorageManager__options_max[StorageManager.Options.Flame_Velocity])
+
+        ui_newLine(1)
+
+        storage.flame_color = UIOperations.renderColorPicker(StorageManager__options_label[StorageManager.Options.Flame_Color], StorageManager__options_tooltip[StorageManager.Options.Flame_Color], storage.flame_color, colorPickerFlags, colorPickerSize)
+        storage.flame_size = renderOptionSlider(StorageManager.Options.Flame_Size, storage.flame_size)
+        storage.flame_temperatureMultiplier = renderOptionSlider(StorageManager.Options.Flame_TemperatureMultiplier, storage.flame_temperatureMultiplier)
+        storage.flame_flameIntensity = renderOptionSlider(StorageManager.Options.Flame_FlameIntensity, storage.flame_flameIntensity)
+        storage.flame_amount = renderOptionSlider(StorageManager.Options.Flame_Amount, storage.flame_amount)
+    end)
 end
 
 local renderSparksSection = function()
-    ui_newLine(1)
     ui_dwriteText('Sparks', UI_HEADER_TEXT_FONT_SIZE)
     ui_newLine(1)
 end
 
 local renderSmokeSection = function()
-    ui_newLine(1)
     ui_dwriteText('Smoke', UI_HEADER_TEXT_FONT_SIZE)
     ui_newLine(1)
 end
