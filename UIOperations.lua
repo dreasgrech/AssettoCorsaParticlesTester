@@ -14,6 +14,7 @@ local ui_popID = ui.popID
 local ui_pushDisabled = ui.pushDisabled
 local ui_popDisabled = ui.popDisabled
 local ui_checkbox = ui.checkbox
+local ui_newLine = ui.newLine
 local string_format = string.format
 local render = render
 
@@ -162,6 +163,13 @@ UIOperations.createDisabledSection = function(createSection, callback)
 
     if createSection then
         ui_popDisabled()
+    end
+end
+
+UIOperations.newLine = function(total)
+    total = total or 1
+    for i = 1, total do
+        ui_newLine(1)
     end
 end
 
