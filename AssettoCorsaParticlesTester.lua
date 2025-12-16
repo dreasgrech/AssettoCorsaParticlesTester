@@ -67,14 +67,14 @@ local colorPickerFlags = bit.bor(
 )
 local colorPickerSize = vec2(DEFAULT_SLIDER_WIDTH, 20)
 
-local flameInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Flame, vec3(0,0,0), vec3(0,0,0))
+local flameInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Flame)
 local flame = flameInstance.effect
 flame.color = storage.flame_color
 flame.size = storage.flame_size
 flame.temperatureMultiplier = storage.flame_temperatureMultiplier
 flame.flameIntensity = storage.flame_flameIntensity
 
-local sparksInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Sparks, vec3(0,0,0), vec3(0,0,0))
+local sparksInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Sparks)
 local sparks = sparksInstance.effect
 sparks.color = storage.sparks_color
 sparks.size = storage.sparks_size
@@ -82,16 +82,29 @@ sparks.life = storage.sparks_life
 sparks.directionSpread = storage.sparks_directionSpread
 sparks.positionSpread = storage.sparks_positionSpread
 
-local smokeInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Smoke, vec3(0,0,0), vec3(0,0,0))
+local smokeInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Smoke)
 local smoke = smokeInstance.effect
 smoke.color = storage.smoke_color
+smoke.size = storage.smoke_size
 smoke.colorConsistency = storage.smoke_colorConsistency
 smoke.thickness = storage.smoke_thickness
 smoke.life = storage.smoke_life
-smoke.size = storage.smoke_size
 smoke.spreadK = storage.smoke_spreadK
 smoke.growK = storage.smoke_growK
 smoke.targetYVelocity = storage.smoke_targetYVelocity
+
+
+--[====[
+local flamesInstances = {}
+local sparksInstances = {}
+local smokeInstances = {}
+
+tables.insert(flamesInstances, flameInstance)
+
+local collectionsStorage = StorageManager.getCollectionsStorage()
+collectionsStorage.flame_emitters = flamesInstances
+--]====]
+
 
 local StorageManager__options_label = StorageManager.options_label
 local StorageManager__options_tooltip = StorageManager.options_tooltip
@@ -119,6 +132,7 @@ local renderFlamesSection = function()
     if ui_button('Generate ext_config') then
         local extConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Flame, flame, storage.flame_position + storage.flame_positionOffset, storage.flame_velocity, storage.flame_amount)
         ac.log(extConfigFormat)
+        ac.setClipboardText(extConfigFormat)
     end
 
     UIOperations_newLine(2)

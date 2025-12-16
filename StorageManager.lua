@@ -235,4 +235,17 @@ StorageManager.getStorage = function()
     return storage
 end
 
+--[====[
+local collectionsStorageTable = {
+    flame_emitters = {},
+    sparks_emitters = {},
+    smoke_emitters = {}
+}
+
+local collectionsStorage = ac.storage(collectionsStorageTable, "collections")
+StorageManager.getCollectionsStorage = function()
+    return collectionsStorage
+end
+--]====]
+
 return StorageManager

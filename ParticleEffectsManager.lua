@@ -70,11 +70,11 @@ local generators = {
     end
 }
 
-ParticleEffectsManager.generateParticleEffect = function(effectType, position, direction)
+ParticleEffectsManager.generateParticleEffect = function(effectType)
     local generator = generators[effectType]
     
     if generator then
-        return generator(position, direction)
+        return generator()
     end
 
     return nil
