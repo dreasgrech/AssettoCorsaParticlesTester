@@ -71,13 +71,7 @@ local generators = {
 }
 
 ParticleEffectsManager.generateParticleEffect = function(effectType)
-    local generator = generators[effectType]
-    
-    if generator then
-        return generator()
-    end
-
-    return nil
+    return generators[effectType]()
 end
 
 return ParticleEffectsManager

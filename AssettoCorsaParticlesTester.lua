@@ -1,3 +1,4 @@
+---@enum ParticleEffectsType
 ParticleEffectsType = {
     Flame = 1,
     Smoke = 2,
@@ -131,6 +132,7 @@ local renderFlamesSection = function()
 
     UIOperations.createDisabledSection(not storage.flame_enabled, function()
         -- Show the position value label
+        ui.alignTextToFramePadding() -- called to align text properly with the button
         ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.flame_position.x, storage.flame_position.y, storage.flame_position.z))
 
         ui_sameLine()
@@ -141,7 +143,7 @@ local renderFlamesSection = function()
             flameInstance.waitingForClickToSetPosition  = true
         end
         
-        UIOperations_newLine()
+        --UIOperations_newLine()
 
         -- Position Offset
         ui_text(StorageManager__options_label[StorageManager.Options.Flame_PositionOffset])
@@ -179,6 +181,7 @@ local renderSparksSection = function()
     
     UIOperations.createDisabledSection(not storage.sparks_enabled, function()
         -- Show the position value label
+        ui.alignTextToFramePadding() -- called to align text properly with the button
         ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.sparks_position.x, storage.sparks_position.y, storage.sparks_position.z))
         
         ui_sameLine()
@@ -226,6 +229,7 @@ local renderSmokeSection = function()
 
     UIOperations.createDisabledSection(not storage.smoke_enabled, function()
         -- Show the position value label
+        ui.alignTextToFramePadding() -- called to align text properly with the button
         ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.smoke_position.x, storage.smoke_position.y, storage.smoke_position.z))
         
         ui_sameLine()

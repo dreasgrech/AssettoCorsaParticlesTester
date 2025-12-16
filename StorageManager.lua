@@ -86,11 +86,14 @@ StorageManager.Options = {
     Smoke_FadeIn = 34,
 }
 
+local POSITION_OFFSET_MIN = -10
+local POSITION_OFFSET_MAX = 10
+
 -- only used to fill in DoD tables, memory freed right after
 local optionsCollection_beforeDoD = {
     { name = StorageManager.Options.Flame_Enabled, default=false, min=nil, max=nil, label='Enabled', tooltip='Enable Flames' },
     { name = StorageManager.Options.Flame_Position, default=vec3(0,0,0), min=nil, max=nil, label='Position', tooltip='Flame position in world coordinates' },
-    { name = StorageManager.Options.Flame_PositionOffset, default=vec3(0,0,0), min=-100, max=100, label='Position Offset', tooltip='Offset in position from the base position' },
+    { name = StorageManager.Options.Flame_PositionOffset, default=vec3(0,0,0), min=POSITION_OFFSET_MIN, max=POSITION_OFFSET_MAX, label='Position Offset', tooltip='Offset in position from the base position' },
     { name = StorageManager.Options.Flame_Velocity, default=vec3(0,1,0), min=-100, max=100, label='Velocity', tooltip='Flame initial velocity' },
     { name = StorageManager.Options.Flame_Color, default=rgbm(0.5, 0.5, 0.5, 0.5), min=nil, max=nil, label='Color', tooltip='Flame color multiplier\n\nFor red/yellow/blue adjustment use `Temperature Multiplier` instead.' },
     { name = StorageManager.Options.Flame_Size, default=0.2, min=0, max=50, label='Size', tooltip='Particles size' },
@@ -100,7 +103,7 @@ local optionsCollection_beforeDoD = {
     
     { name = StorageManager.Options.Sparks_Enabled, default=false, min=nil, max=nil, label='Enabled', tooltip='Enable Sparks' },
     { name = StorageManager.Options.Sparks_Position, default=vec3(0,0,0), min=nil, max=nil, label='Position', tooltip='Sparks position in world coordinates' },
-    { name = StorageManager.Options.Sparks_PositionOffset, default=vec3(0,0,0), min=-100, max=100, label='Position Offset', tooltip='Offset in position from the base position' },
+    { name = StorageManager.Options.Sparks_PositionOffset, default=vec3(0,0,0), min=POSITION_OFFSET_MIN, max=POSITION_OFFSET_MAX, label='Position Offset', tooltip='Offset in position from the base position' },
     { name = StorageManager.Options.Sparks_Velocity, default=vec3(0,1,0), min=-100, max=100, label='Velocity', tooltip='Sparks initial velocity' },
     { name = StorageManager.Options.Sparks_Color, default=rgbm(0.5, 0.5, 0.5, 0.5), min=nil, max=nil, label='Color', tooltip='Sparks color' },
     { name = StorageManager.Options.Sparks_Life, default=4.0, min=0, max=100, label='Life', tooltip='Base lifetime' },
@@ -111,7 +114,7 @@ local optionsCollection_beforeDoD = {
     
     { name = StorageManager.Options.Smoke_Enabled, default=false, min=nil, max=nil, label='Enabled', tooltip='Enable Smoke' },
     { name = StorageManager.Options.Smoke_Position, default=vec3(0,0,0), min=nil, max=nil, label='Position', tooltip='Smoke position in world coordinates' },
-    { name = StorageManager.Options.Smoke_PositionOffset, default=vec3(0,0,0), min=-100, max=100, label='Position Offset', tooltip='Offset in position from the base position' },
+    { name = StorageManager.Options.Smoke_PositionOffset, default=vec3(0,0,0), min=POSITION_OFFSET_MIN, max=POSITION_OFFSET_MAX, label='Position Offset', tooltip='Offset in position from the base position' },
     { name = StorageManager.Options.Smoke_Velocity, default=vec3(0,1,0), min=-100, max=100, label='Velocity', tooltip='Smoke initial velocity' },
     { name = StorageManager.Options.Smoke_Color, default=rgbm(0.5, 0.5, 0.5, 0.5), min=nil, max=nil, label='Color', tooltip='Smoke color with values from 0 to 1. Alpha can be used to adjust thickness.' },
     { name = StorageManager.Options.Smoke_ColorConsistency, default=0.5, min=0, max=1, label='Color Consistency', tooltip='Defines how much color dissipates when smoke expands, from 0 to 1.' },

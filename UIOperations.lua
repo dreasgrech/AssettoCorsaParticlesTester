@@ -23,10 +23,10 @@ local UIOperations = {}
 ---Color button control. Returns true if color has changed (as usual with Lua, colors are passed)
 ---by reference so update value would be put in place of old one automatically.
 ---@param label string
----@param color rgb|rgbm
+---@param color rgbm
 ---@param flags ui.ColorPickerFlags?
 ---@param size vec2?
----@return boolean
+---@return rgbm
 UIOperations.renderColorPicker = function(label, tooltip, color, flags, size)
     ui_colorButton(label, color, flags, size)
 
@@ -136,7 +136,6 @@ end
 ---@param maxValue number @Maximum slider value.
 ---@param format string|'X: %.3f'|'Y: %.3f'|'Z: %.3f'|nil @C-style format string. Default value: `'X: %.3f'`, `'Y: %.3f'`, `'Z: %.3f'
 ---@return vec3 newValue
----@return boolean changed
 UIOperations.renderVec3Sliders = function(label, value, minValue, maxValue, format)
     ui_pushID(label)
 
