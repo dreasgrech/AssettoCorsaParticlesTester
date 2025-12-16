@@ -129,14 +129,6 @@ local renderFlamesSection = function()
 
     UIOperations_newLine(1)
 
-    if ui_button('Generate ext_config') then
-        local extConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Flame, flame, storage.flame_position + storage.flame_positionOffset, storage.flame_velocity, storage.flame_amount)
-        ac.log(extConfigFormat)
-        ac.setClipboardText(extConfigFormat)
-    end
-
-    UIOperations_newLine(2)
-    
     UIOperations.createDisabledSection(not storage.flame_enabled, function()
         -- Show the position value label
         ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.flame_position.x, storage.flame_position.y, storage.flame_position.z))
@@ -185,14 +177,6 @@ local renderSparksSection = function()
     
     UIOperations_newLine(1)
     
-    if ui_button('Generate ext_config') then
-        local extConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Sparks, sparks, storage.sparks_position + storage.sparks_positionOffset, storage.sparks_velocity, storage.sparks_amount)
-        ac.log(extConfigFormat)
-    end
-
-    UIOperations_newLine(2)
-
-
     UIOperations.createDisabledSection(not storage.sparks_enabled, function()
         -- Show the position value label
         ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.sparks_position.x, storage.sparks_position.y, storage.sparks_position.z))
@@ -240,13 +224,6 @@ local renderSmokeSection = function()
     
     UIOperations_newLine(1)
 
-    if ui_button('Generate ext_config') then
-        local extConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Smoke, smoke, storage.smoke_position + storage.smoke_positionOffset, storage.smoke_velocity, storage.smoke_amount)
-        ac.log(extConfigFormat)
-    end
-
-    UIOperations_newLine(2)
-
     UIOperations.createDisabledSection(not storage.smoke_enabled, function()
         -- Show the position value label
         ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.smoke_position.x, storage.smoke_position.y, storage.smoke_position.z))
@@ -289,14 +266,16 @@ local renderSmokeSection = function()
     ui_popID()
 end
 
+local COLUMNS_WIDTH = 370
+
 -- Function defined in manifest.ini
 -- wiki: function to be called each frame to draw window content
 ---
 function script.MANIFEST__FUNCTION_MAIN(dt)
     ui_columns(3, true, "sections")
-    ui_setColumnWidth(0, 370)
-    ui_setColumnWidth(1, 370)
-    ui_setColumnWidth(2, 370)
+    ui_setColumnWidth(0, COLUMNS_WIDTH)
+    ui_setColumnWidth(1, COLUMNS_WIDTH)
+    ui_setColumnWidth(2, COLUMNS_WIDTH)
 
     renderFlamesSection()
     
@@ -308,7 +287,38 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     
     renderSmokeSection()
     
-    -- finish the columns
+    -- finish the sections table
+    ui_columns(1, false)
+    
+    ui.separator()
+    
+    ui_columns(3, true, "ext_config_sections")
+    ui_setColumnWidth(0, COLUMNS_WIDTH)
+    ui_setColumnWidth(1, COLUMNS_WIDTH)
+    ui_setColumnWidth(2, COLUMNS_WIDTH)
+
+    local flameExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Flame, flame, storage.flame_position + storage.flame_positionOffset, storage.flame_velocity, storage.flame_amount)
+    ui_text(flameExtConfigFormat)
+    if ui.itemHovered() then
+        ui.setMouseCursor(ui.MouseCursor.Hand)
+        ui.setTooltip('Click to copy to clipboard')
+    end
+    if ui.itemClicked(ui.MouseButton.Left, true) then
+        ac.setClipboardText(flameExtConfigFormat)
+        ac.setMessage('Copied', 'Copied to clipboard', nil, 5.0)
+    end
+    
+    ui_nextColumn()
+    
+    local sparksExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Sparks, sparks, storage.sparks_position + storage.sparks_positionOffset, storage.sparks_velocity, storage.sparks_amount)
+    ui_text(sparksExtConfigFormat)
+    
+    ui_nextColumn()
+    
+    local smokeExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Smoke, smoke, storage.smoke_position + storage.smoke_positionOffset, storage.smoke_velocity, storage.smoke_amount)
+    ui_text(smokeExtConfigFormat)
+    
+    -- finish the ext_config_sections table
     ui_columns(1, false)
 end
 
