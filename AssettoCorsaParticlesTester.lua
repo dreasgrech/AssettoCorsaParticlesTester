@@ -120,7 +120,7 @@ local renderFlamesSection = function()
     UIOperations_newLine(1)
 
     if ui_button('Generate ext_config') then
-        local extConfigFormat = ExtConfigCodeGenerator.generateCodeForFlames(flame, storage.flame_position + storage.flame_positionOffset, storage.flame_velocity, storage.flame_amount)
+        local extConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Flame, flame, storage.flame_position + storage.flame_positionOffset, storage.flame_velocity, storage.flame_amount)
         ac.log(extConfigFormat)
     end
 
@@ -175,7 +175,7 @@ local renderSparksSection = function()
     UIOperations_newLine(1)
     
     if ui_button('Generate ext_config') then
-        local extConfigFormat = ExtConfigCodeGenerator.generateCodeForSparks(sparks, storage.sparks_position + storage.sparks_positionOffset, storage.sparks_velocity, storage.sparks_amount)
+        local extConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Sparks, sparks, storage.sparks_position + storage.sparks_positionOffset, storage.sparks_velocity, storage.sparks_amount)
         ac.log(extConfigFormat)
     end
 
@@ -230,7 +230,7 @@ local renderSmokeSection = function()
     UIOperations_newLine(1)
 
     if ui_button('Generate ext_config') then
-        local extConfigFormat = ExtConfigCodeGenerator.generateCodeForSmoke(smoke, storage.smoke_position + storage.smoke_positionOffset, storage.smoke_velocity, storage.smoke_amount)
+        local extConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Smoke, smoke, storage.smoke_position + storage.smoke_positionOffset, storage.smoke_velocity, storage.smoke_amount)
         ac.log(extConfigFormat)
     end
 
@@ -385,15 +385,3 @@ end
 ---
 function script.MANIFEST__TRANSPARENT(dt)
 end
-
-
---[====[
-local flamesCode = ExtConfigCodeGenerator.generateCodeForFlames(flame, storage.flame_position + storage.flame_positionOffset, storage.flame_velocity, storage.flame_amount)
-ac.log(flamesCode)
-
-local sparksCode = ExtConfigCodeGenerator.generateCodeForSparks(sparks, storage.sparks_position + storage.sparks_positionOffset, storage.sparks_velocity, storage.sparks_amount)
-ac.log(sparksCode)
-
-local smokeCode = ExtConfigCodeGenerator.generateCodeForSmoke(smoke, storage.smoke_position + storage.smoke_positionOffset, storage.smoke_velocity, storage.smoke_amount)
-ac.log(smokeCode)
---]====]

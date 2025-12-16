@@ -69,55 +69,54 @@ local generateCommon = function(effect, position, velocity, amount, header)
     StringBuilder_append(string.format("COLOR = %.2f, %.2f, %.2f, %.2f", color.r, color.g, color.b, color.mult))
 end
 
----@param effect ac.Particles.Flame
----@param position vec3
----@param velocity vec3
----@param amount number
-ExtConfigCodeGenerator.generateCodeForFlames = function(effect, position, velocity, amount)
-    StringBuilder_clear()
-    
-    generateCommon(effect, position, velocity, amount, "FLAME")
-    
-    StringBuilder_append(string.format("SIZE = %.2f", effect.size))
-    StringBuilder_append(string.format("TEMPERATURE_MULT = %.2f", effect.temperatureMultiplier))
-    StringBuilder_append(string.format("FLAME_INTENSITY = %.2f", effect.flameIntensity))
-    
-    return StringBuilder_toString()
-end
+local generators = {
+    [ParticleEffectsType.Flame] = function (effect, position, velocity, amount)
+        StringBuilder_clear()
 
----@param effect ac.Particles.Sparks
----@param position vec3
----@param velocity vec3
----@param amount number
-ExtConfigCodeGenerator.generateCodeForSparks = function(effect, position, velocity, amount)
-    StringBuilder_clear()
-    
-    generateCommon(effect, position, velocity, amount, "SPARKS")
-    
-    StringBuilder_append(string.format("LIFE = %.2f", effect.life))
-    StringBuilder_append(string.format("SPREAD_DIR = %.2f", effect.directionSpread))
-    StringBuilder_append(string.format("SPREAD_POS = %.2f", effect.positionSpread))
-    
-    return StringBuilder_toString()
-end
+        generateCommon(effect, position, velocity, amount, "FLAME")
 
----@param effect ac.Particles.Smoke
+        StringBuilder_append(string.format("SIZE = %.2f", effect.size))
+        StringBuilder_append(string.format("TEMPERATURE_MULT = %.2f", effect.temperatureMultiplier))
+        StringBuilder_append(string.format("FLAME_INTENSITY = %.2f", effect.flameIntensity))
+
+        return StringBuilder_toString()
+    end,
+    [ParticleEffectsType.Sparks] = function (effect, position, velocity, amount)
+        StringBuilder_clear()
+
+        generateCommon(effect, position, velocity, amount, "SPARKS")
+
+        StringBuilder_append(string.format("LIFE = %.2f", effect.life))
+        StringBuilder_append(string.format("SPREAD_DIR = %.2f", effect.directionSpread))
+        StringBuilder_append(string.format("SPREAD_POS = %.2f", effect.positionSpread))
+
+        return StringBuilder_toString()
+    end,
+    [ParticleEffectsType.Smoke] = function (effect, position, velocity, amount)
+        StringBuilder_clear()
+
+        generateCommon(effect, position, velocity, amount, "SMOKE")
+
+        StringBuilder_append(string.format("COLOR_CONSISTENCY = %.2f", effect.colorConsistency))
+        StringBuilder_append(string.format("SPREAD = %.2f", effect.spreadK))
+        StringBuilder_append(string.format("GROW = %.2f", effect.growK))
+        StringBuilder_append(string.format("THICKNESS = %.2f", effect.thickness))
+        StringBuilder_append(string.format("LIFE = %.2f", effect.life))
+        StringBuilder_append(string.format("TARGET_Y_VELOCITY = %.2f", effect.targetYVelocity))
+
+        return StringBuilder_toString()
+    end,
+}
+
+--- Generate ext_config format for the given particle effect
+---@param effectType ParticleEffectsType
+---@param effect ac.Particles.Flame|ac.Particles.Smoke|ac.Particles.Sparks
 ---@param position vec3
 ---@param velocity vec3
 ---@param amount number
-ExtConfigCodeGenerator.generateCodeForSmoke = function(effect, position, velocity, amount)
-    StringBuilder_clear()
-    
-    generateCommon(effect, position, velocity, amount, "SMOKE")
-    
-    StringBuilder_append(string.format("COLOR_CONSISTENCY = %.2f", effect.colorConsistency))
-    StringBuilder_append(string.format("SPREAD = %.2f", effect.spreadK))
-    StringBuilder_append(string.format("GROW = %.2f", effect.growK))
-    StringBuilder_append(string.format("THICKNESS = %.2f", effect.thickness))
-    StringBuilder_append(string.format("LIFE = %.2f", effect.life))
-    StringBuilder_append(string.format("TARGET_Y_VELOCITY = %.2f", effect.targetYVelocity))
-    
-    return StringBuilder_toString()
+---@return string
+ExtConfigCodeGenerator.generateCode = function(effectType, effect, position, velocity, amount)
+    return generators[effectType](effect, position, velocity, amount)
 end
 
 return ExtConfigCodeGenerator
