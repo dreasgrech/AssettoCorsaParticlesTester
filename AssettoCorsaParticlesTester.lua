@@ -1,3 +1,10 @@
+ParticleEffectsType = {
+    Flame = 1,
+    Smoke = 2,
+    Sparks = 3,
+}
+
+StringBuilder = require('StringBuilder')
 StorageManager = require('StorageManager')
 UIOperations = require('UIOperations')
 MathOperations = require('MathOperations')

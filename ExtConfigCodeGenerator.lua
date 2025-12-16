@@ -1,6 +1,10 @@
 ﻿local ExtConfigCodeGenerator = {}
 
 local MathOperations_splitVelocity = MathOperations.splitVelocity
+local StringBuilder = StringBuilder
+local StringBuilder_clear = StringBuilder.clear
+local StringBuilder_append = StringBuilder.append
+local StringBuilder_toString = StringBuilder.toString
 
 -- ---@param effect ac.Particles.Flame|ac.Particles.Smoke|ac.Particles.Sparks
 -- ExtConfigCodeGenerator.generateCode = function(effect)
@@ -8,6 +12,8 @@ local MathOperations_splitVelocity = MathOperations.splitVelocity
 -- end
 
 --[=====[
+
+-- https://github.com/ac-custom-shaders-patch/acc-extension-config/blob/master/config/tracks/common/particles_track.ini
 
 [TEMPLATE: _Particles_Bonfire_Fire]
 @OUTPUT = FLAME_...
@@ -51,27 +57,32 @@ TARGET_Y_VELOCITY = 0.5
 --- Temporary vector for direction calculation
 local outDirection = vec3(0, 0, 0)
 
+local generateCommon = function(effect, position, velocity, amount, header)
+    local speed, direction = MathOperations_splitVelocity(velocity, outDirection)
+    local color = effect.color
+    
+    StringBuilder_append(string.format("[%s_...]", header))
+    StringBuilder_append(string.format("POSITION = %.2f, %.2f, %.2f", position.x, position.y, position.z))
+    StringBuilder_append(string.format("DIRECTION = %.2f, %.2f, %.2f", direction.x, direction.y, direction.z))
+    StringBuilder_append(string.format("SPEED = %.2f", speed))
+    StringBuilder_append(string.format("INTENSITY = %.2f", amount))
+    StringBuilder_append(string.format("COLOR = %.2f, %.2f, %.2f, %.2f", color.r, color.g, color.b, color.mult))
+end
+
 ---@param effect ac.Particles.Flame
 ---@param position vec3
 ---@param velocity vec3
 ---@param amount number
 ExtConfigCodeGenerator.generateCodeForFlames = function(effect, position, velocity, amount)
-    local stringBuilder = {}
-    local speed, direction = MathOperations_splitVelocity(velocity, outDirection)
+    StringBuilder_clear()
     
-    table.insert(stringBuilder, "[FLAME_...]")
-    table.insert(stringBuilder, string.format("POSITION = %.2f, %.2f, %.2f", position.x, position.y, position.z))
-    table.insert(stringBuilder, string.format("DIRECTION = %.2f, %.2f, %.2f", direction.x, direction.y, direction.z))
-    table.insert(stringBuilder, string.format("SPEED = %.2f", speed))
-    table.insert(stringBuilder, string.format("INTENSITY = %.2f", amount))
+    generateCommon(effect, position, velocity, amount, "FLAME")
     
-    table.insert(stringBuilder, string.format("SIZE = %.2f", effect.size))
-    table.insert(stringBuilder, string.format("TEMPERATURE_MULT = %.2f", effect.temperatureMultiplier))
-    table.insert(stringBuilder, string.format("FLAME_INTENSITY = %.2f", effect.flameIntensity))
-    local color = effect.color
-    table.insert(stringBuilder, string.format("COLOR = %.2f, %.2f, %.2f, %.2f", color.r, color.g, color.b, color.mult))
+    StringBuilder_append(string.format("SIZE = %.2f", effect.size))
+    StringBuilder_append(string.format("TEMPERATURE_MULT = %.2f", effect.temperatureMultiplier))
+    StringBuilder_append(string.format("FLAME_INTENSITY = %.2f", effect.flameIntensity))
     
-    return table.concat(stringBuilder, "\n")
+    return StringBuilder_toString()
 end
 
 ---@param effect ac.Particles.Sparks
@@ -79,23 +90,15 @@ end
 ---@param velocity vec3
 ---@param amount number
 ExtConfigCodeGenerator.generateCodeForSparks = function(effect, position, velocity, amount)
-    local stringBuilder = {}
-    local speed, direction = MathOperations_splitVelocity(velocity, outDirection)
+    StringBuilder_clear()
     
-    table.insert(stringBuilder, "[SPARKS_...]")
-    table.insert(stringBuilder, string.format("POSITION = %.2f, %.2f, %.2f", position.x, position.y, position.z))
-    table.insert(stringBuilder, string.format("DIRECTION = %.2f, %.2f, %.2f", direction.x, direction.y, direction.z))
-    table.insert(stringBuilder, string.format("SPEED = %.2f", speed))
-    table.insert(stringBuilder, string.format("INTENSITY = %.2f", amount))
+    generateCommon(effect, position, velocity, amount, "SPARKS")
     
-    table.insert(stringBuilder, string.format("LIFE = %.2f", effect.life))
-    table.insert(stringBuilder, string.format("SPREAD_DIR = %.2f", effect.directionSpread))
-    table.insert(stringBuilder, string.format("SPREAD_POS = %.2f", effect.positionSpread))
-    -- table.insert(stringBuilder, string.format("COLOR = '#%02X%02X%02X'", math.floor(effect.color.r * 255), math.floor(effect.color.g * 255), math.floor(effect.color.b * 255)))
-    local color = effect.color
-    table.insert(stringBuilder, string.format("COLOR = %.2f, %.2f, %.2f, %.2f", color.r, color.g, color.b, color.mult))
+    StringBuilder_append(string.format("LIFE = %.2f", effect.life))
+    StringBuilder_append(string.format("SPREAD_DIR = %.2f", effect.directionSpread))
+    StringBuilder_append(string.format("SPREAD_POS = %.2f", effect.positionSpread))
     
-    return table.concat(stringBuilder, "\n")
+    return StringBuilder_toString()
 end
 
 ---@param effect ac.Particles.Smoke
@@ -103,22 +106,18 @@ end
 ---@param velocity vec3
 ---@param amount number
 ExtConfigCodeGenerator.generateCodeForSmoke = function(effect, position, velocity, amount)
-    local stringBuilder = {}
-    table.insert(stringBuilder, "[SMOKE_...]")
-    table.insert(stringBuilder, string.format("POSITION = %.2f, %.2f, %.2f", position.x, position.y, position.z))
-    table.insert(stringBuilder, string.format("DIRECTION = %.2f, %.2f, %.2f", velocity.x, velocity.y, velocity.z))
-    --table.insert(stringBuilder, string.format("SPEED = %.2f", effect.speed))
-    table.insert(stringBuilder, string.format("SIZE = %.2f", effect.size))
-    table.insert(stringBuilder, string.format("COLOR = %.2f, %.2f, %.2f, %.2f", effect.color.r, effect.color.g, effect.color.b, effect.color.mult))
-    table.insert(stringBuilder, string.format("COLOR_CONSISTENCY = %.2f", effect.colorConsistency))
-    table.insert(stringBuilder, string.format("SPREAD = %.2f", effect.spreadK))
-    table.insert(stringBuilder, string.format("GROW = %.2f", effect.growK))
-    -- table.insert(stringBuilder, string.format("INTENSITY = 0.1 * $_Condition"))
-    table.insert(stringBuilder, string.format("THICKNESS = %.2f", effect.thickness))
-    table.insert(stringBuilder, string.format("LIFE = %.2f", effect.life))
-    table.insert(stringBuilder, string.format("TARGET_Y_VELOCITY = %.2f", effect.targetYVelocity))
-    return table.concat(stringBuilder, "\n")
+    StringBuilder_clear()
     
+    generateCommon(effect, position, velocity, amount, "SMOKE")
+    
+    StringBuilder_append(string.format("COLOR_CONSISTENCY = %.2f", effect.colorConsistency))
+    StringBuilder_append(string.format("SPREAD = %.2f", effect.spreadK))
+    StringBuilder_append(string.format("GROW = %.2f", effect.growK))
+    StringBuilder_append(string.format("THICKNESS = %.2f", effect.thickness))
+    StringBuilder_append(string.format("LIFE = %.2f", effect.life))
+    StringBuilder_append(string.format("TARGET_Y_VELOCITY = %.2f", effect.targetYVelocity))
+    
+    return StringBuilder_toString()
 end
 
 return ExtConfigCodeGenerator
