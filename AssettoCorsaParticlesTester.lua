@@ -9,6 +9,7 @@ StorageManager = require('StorageManager')
 UIOperations = require('UIOperations')
 MathOperations = require('MathOperations')
 ExtConfigCodeGenerator = require('ExtConfigCodeGenerator')
+ParticleEffectsManager = require('ParticleEffectsManager')
 
 -- local bindings
 local ac = ac
@@ -66,35 +67,31 @@ local colorPickerFlags = bit.bor(
 )
 local colorPickerSize = vec2(DEFAULT_SLIDER_WIDTH, 20)
 
-local flame = ac.Particles.Flame( {
-    color = storage.flame_color,
-    size = storage.flame_size,
-    temperatureMultiplier = storage.flame_temperatureMultiplier,
-    flameIntensity = storage.flame_flameIntensity
-})
+local flameInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Flame, vec3(0,0,0), vec3(0,0,0))
+local flame = flameInstance.effect
+flame.color = storage.flame_color
+flame.size = storage.flame_size
+flame.temperatureMultiplier = storage.flame_temperatureMultiplier
+flame.flameIntensity = storage.flame_flameIntensity
 
-local sparks = ac.Particles.Sparks({
-    color = storage.sparks_color,
-    life = storage.sparks_life,
-    size = storage.sparks_size,
-    directionSpread = storage.sparks_directionSpread,
-    positionSpread = storage.sparks_positionSpread
-})
+local sparksInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Sparks, vec3(0,0,0), vec3(0,0,0))
+local sparks = sparksInstance.effect
+sparks.color = storage.sparks_color
+sparks.size = storage.sparks_size
+sparks.life = storage.sparks_life
+sparks.directionSpread = storage.sparks_directionSpread
+sparks.positionSpread = storage.sparks_positionSpread
 
-local smoke = ac.Particles.Smoke({
-    color = storage.smoke_color,
-    colorConsistency = storage.smoke_colorConsistency,
-    thickness = storage.smoke_thickness,
-    life = storage.smoke_life,
-    size = storage.smoke_size,
-    spreadK = storage.smoke_spreadK,
-    growK = storage.smoke_growK,
-    targetYVelocity = storage.smoke_targetYVelocity,
-})
-
-local waitingForClick_Flames = false
-local waitingForClick_Sparks = false
-local waitingForClick_Smoke = false
+local smokeInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Smoke, vec3(0,0,0), vec3(0,0,0))
+local smoke = smokeInstance.effect
+smoke.color = storage.smoke_color
+smoke.colorConsistency = storage.smoke_colorConsistency
+smoke.thickness = storage.smoke_thickness
+smoke.life = storage.smoke_life
+smoke.size = storage.smoke_size
+smoke.spreadK = storage.smoke_spreadK
+smoke.growK = storage.smoke_growK
+smoke.targetYVelocity = storage.smoke_targetYVelocity
 
 local StorageManager__options_label = StorageManager.options_label
 local StorageManager__options_tooltip = StorageManager.options_tooltip
@@ -132,10 +129,10 @@ local renderFlamesSection = function()
 
         ui_sameLine()
 
-        local buttonText = waitingForClick_Flames and 'Click in the world' or 'Set Position'
+        local buttonText = flameInstance.waitingForClickToSetPosition and 'Click in the world' or 'Set Position'
 
         if ui_button(buttonText) then
-            waitingForClick_Flames = true
+            flameInstance.waitingForClickToSetPosition  = true
         end
         
         UIOperations_newLine()
@@ -188,10 +185,10 @@ local renderSparksSection = function()
         
         ui_sameLine()
         
-        local buttonText = waitingForClick_Sparks and 'Click in the world' or 'Set Position'
+        local buttonText = sparksInstance.waitingForClickToSetPosition and 'Click in the world' or 'Set Position'
 
         if ui_button(buttonText) then
-            waitingForClick_Sparks = true
+            sparksInstance.waitingForClickToSetPosition = true
         end
 
         -- Position Offset
@@ -242,10 +239,10 @@ local renderSmokeSection = function()
         
         ui_sameLine()
         
-        local buttonText = waitingForClick_Smoke and 'Click in the world' or 'Set Position'
+        local buttonText = smokeInstance.waitingForClickToSetPosition and 'Click in the world' or 'Set Position'
 
         if ui_button(buttonText) then
-            waitingForClick_Smoke = true
+            smokeInstance.waitingForClickToSetPosition = true
         end
 
         -- Position Offset
@@ -310,30 +307,30 @@ end
 -- wiki: called after a whole simulation update
 ---
 function script.MANIFEST__UPDATE(dt)
-    if waitingForClick_Flames then
+    if flameInstance.waitingForClickToSetPosition   then
         local worldPositionFound, out_worldPosition = UIOperations.tryGetWorldPositionFromMouseClick()
         if worldPositionFound then
             ac.log('Flame position set to: ' .. tostring(out_worldPosition))
             storage.flame_position = out_worldPosition
-            waitingForClick_Flames = false
+            flameInstance.waitingForClickToSetPosition    = false
         end
     end
     
-    if waitingForClick_Sparks then
+    if sparksInstance.waitingForClickToSetPosition then
         local worldPositionFound, out_worldPosition = UIOperations.tryGetWorldPositionFromMouseClick()
         if worldPositionFound then
             ac.log('Sparks position set to: ' .. tostring(out_worldPosition))
             storage.sparks_position = out_worldPosition
-            waitingForClick_Sparks = false
+            sparksInstance.waitingForClickToSetPosition = false
         end
     end
     
-    if waitingForClick_Smoke then
+    if smokeInstance.waitingForClickToSetPosition then
         local worldPositionFound, out_worldPosition = UIOperations.tryGetWorldPositionFromMouseClick()
         if worldPositionFound then
             ac.log('Smoke position set to: ' .. tostring(out_worldPosition))
             storage.smoke_position = out_worldPosition
-            waitingForClick_Smoke = false
+            smokeInstance.waitingForClickToSetPosition = false
         end
     end
     
