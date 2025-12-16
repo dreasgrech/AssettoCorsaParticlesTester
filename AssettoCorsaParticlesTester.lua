@@ -268,6 +268,20 @@ end
 
 local COLUMNS_WIDTH = 370
 
+local renderExtConfigFormatSection = function(extConfigFormat)
+    ui_text(extConfigFormat)
+
+    if ui.itemHovered() then
+        ui.setMouseCursor(ui.MouseCursor.Hand)
+        ui.setTooltip('Click to copy to clipboard')
+    end
+
+    if ui.itemClicked(ui.MouseButton.Left, true) then
+        ac.setClipboardText(extConfigFormat)
+        ac.setMessage('Copied', 'Copied to clipboard', nil, 5.0)
+    end
+end
+
 -- Function defined in manifest.ini
 -- wiki: function to be called each frame to draw window content
 ---
@@ -298,34 +312,21 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     ui_setColumnWidth(2, COLUMNS_WIDTH)
 
     local flameExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Flame, flame, storage.flame_position + storage.flame_positionOffset, storage.flame_velocity, storage.flame_amount)
-    ui_text(flameExtConfigFormat)
-    if ui.itemHovered() then
-        ui.setMouseCursor(ui.MouseCursor.Hand)
-        ui.setTooltip('Click to copy to clipboard')
-    end
-    if ui.itemClicked(ui.MouseButton.Left, true) then
-        ac.setClipboardText(flameExtConfigFormat)
-        ac.setMessage('Copied', 'Copied to clipboard', nil, 5.0)
-    end
+    renderExtConfigFormatSection(flameExtConfigFormat)
     
     ui_nextColumn()
     
     local sparksExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Sparks, sparks, storage.sparks_position + storage.sparks_positionOffset, storage.sparks_velocity, storage.sparks_amount)
-    ui_text(sparksExtConfigFormat)
+    renderExtConfigFormatSection(sparksExtConfigFormat)
     
     ui_nextColumn()
     
     local smokeExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Smoke, smoke, storage.smoke_position + storage.smoke_positionOffset, storage.smoke_velocity, storage.smoke_amount)
-    ui_text(smokeExtConfigFormat)
+    renderExtConfigFormatSection(smokeExtConfigFormat)
     
     -- finish the ext_config_sections table
     ui_columns(1, false)
 end
-
--- ac.Particles.SmokeFlags = { FadeIn = 1, DisableCollisions = 256 }
--- smoke.flags = bit.bor(smoke.flags, ac.Particles.SmokeFlags.DisableCollisions)
--- smoke.flags = bit.bor(smoke.flags, ac.Particles.SmokeFlags.FadeIn)
--- ac.log('Smoke flags: ' .. tostring(smoke.flags))
 
 ---
 -- wiki: called after a whole simulation update
