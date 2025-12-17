@@ -286,10 +286,50 @@ local renderExtConfigFormatSection = function(extConfigFormat)
     end
 end
 
+local EXTENSION_PATH = '/extension/'
+local EXT_CONFIG_FILENAME = 'ext_config.ini'
+local EXT_CONFIG_RELATIVE_PATH = EXTENSION_PATH .. EXT_CONFIG_FILENAME
+
+local function renderOpenTrackExtConfigLink()
+  local trackLayoutFolder = ac.getFolder(ac.FolderID.CurrentTrackLayout)
+  if not trackLayoutFolder or trackLayoutFolder == '' then
+    ui.text(EXT_CONFIG_FILENAME)
+    return
+  end
+
+  local extConfigPath = trackLayoutFolder .. EXT_CONFIG_RELATIVE_PATH
+
+  if ui.textHyperlink(EXT_CONFIG_FILENAME) then
+    if io.fileExists(extConfigPath) then
+      ac.log(os.findAssociatedExecutable(extConfigPath))
+      os.openTextFile(extConfigPath, 0)
+    else
+      os.showInExplorer(trackLayoutFolder .. EXTENSION_PATH)
+    end
+  end
+
+  if ui.itemHovered() then
+    ui.setMouseCursor(ui.MouseCursor.Hand)
+  end
+end
+
+
 -- Function defined in manifest.ini
 -- wiki: function to be called each frame to draw window content
 ---
 function script.MANIFEST__FUNCTION_MAIN(dt)
+    ui.textColored('Assetto Corsa Particles Tester is a helper app for adding particle effects to tracks.', rgbm(1, 1, 1, 1))
+    UIOperations_newLine(1)
+    ui.textColored('To add a particle effect to this track, first set a position using the button and once you are satisfied with your options, click the generated code below and paste it into the', rgbm(1, 1, 1, 1))
+    ui_sameLine()
+    renderOpenTrackExtConfigLink()
+
+    UIOperations_newLine(1)
+
+    ui.separator()
+
+    UIOperations_newLine(1)
+
     ui_columns(3, true, "sections")
     ui_setColumnWidth(0, COLUMNS_WIDTH)
     ui_setColumnWidth(1, COLUMNS_WIDTH)
