@@ -6,6 +6,9 @@ local StringBuilder_clear = StringBuilder.clear
 local StringBuilder_append = StringBuilder.append
 local StringBuilder_toString = StringBuilder.toString
 
+local ExtConfigKeyType = ExtConfigDefinitions.ExtConfigKeyType
+local ExtConfigKeyNames = ExtConfigDefinitions.ExtConfigKeyNames
+
 -- ---@param effect ac.Particles.Flame|ac.Particles.Smoke|ac.Particles.Sparks
 -- ExtConfigCodeGenerator.generateCode = function(effect)
 --     effect.
@@ -56,52 +59,6 @@ TARGET_Y_VELOCITY = 0.5
 
 --- Temporary vector for direction calculation
 local outDirection = vec3(0, 0, 0)
-
----@enum ExtConfigKeyType
-local ExtConfigKeyType = {
-    Position = 0,
-    Direction = 1,
-    Speed = 2,
-    Intensity = 3,
-    Color = 4,
-
-    Size = 5,
-    TemperatureMult = 6,
-    FlameIntensity = 7,
-
-    Life = 8,
-    SpreadDir = 9,
-    SpreadPos = 10,
-
-    ColorConsistency = 11,
-    Spread = 12,
-    Grow = 13,
-    Thickness = 14,
-    -- Life = 15,
-    TargetYVelocity = 16,
-}
-
-local ExtConfigKeyNames = {
-    [ExtConfigKeyType.Position] = "POSITION",
-    [ExtConfigKeyType.Direction] = "DIRECTION",
-    [ExtConfigKeyType.Speed] = "SPEED",
-    [ExtConfigKeyType.Intensity] = "INTENSITY",
-    [ExtConfigKeyType.Color] = "COLOR",
-    [ExtConfigKeyType.Size] = "SIZE",
-
-    [ExtConfigKeyType.TemperatureMult] = "TEMPERATURE_MULT",
-    [ExtConfigKeyType.FlameIntensity] = "FLAME_INTENSITY",
-
-    [ExtConfigKeyType.Life] = "LIFE",
-    [ExtConfigKeyType.SpreadDir] = "SPREAD_DIR",
-    [ExtConfigKeyType.SpreadPos] = "SPREAD_POS",
-
-    [ExtConfigKeyType.ColorConsistency] = "COLOR_CONSISTENCY",
-    [ExtConfigKeyType.Spread] = "SPREAD",
-    [ExtConfigKeyType.Grow] = "GROW",
-    [ExtConfigKeyType.Thickness] = "THICKNESS",
-    [ExtConfigKeyType.TargetYVelocity] = "TARGET_Y_VELOCITY",
-}
 
 ---@param effect ac.Particles.Flame|ac.Particles.Smoke|ac.Particles.Sparks
 ---@param position vec3
@@ -185,6 +142,12 @@ local generators = {
 ---@return string
 ExtConfigCodeGenerator.generateCode = function(effectType, effect, position, velocity, amount)
     return generators[effectType](effect, position, velocity, amount)
+end
+
+---@param extConfigKeyType ExtConfigDefinitions.ExtConfigKeyType
+---@return string
+ExtConfigCodeGenerator.getExtConfigKeyName = function(extConfigKeyType)
+    return ExtConfigKeyNames[extConfigKeyType]
 end
 
 return ExtConfigCodeGenerator

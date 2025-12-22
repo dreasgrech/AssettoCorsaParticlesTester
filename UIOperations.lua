@@ -41,16 +41,18 @@ UIOperations.renderColorPicker = function(label, tooltip, color, flags, size)
     return color
 end
 
+local emptyVec3 = vec3(0, 0, 0)
+
 ---Tries to get world position from mouse click.
 ---@return boolean hit @Whether a valid world position was found.
----@return vec3|nil out_worldPosition @The world position if hit is true.
+---@return vec3 out_worldPosition @The world position if hit is true.
 UIOperations.tryGetWorldPositionFromMouseClick = function()
     -- Avoid conflicts if you’re using CSP’s gizmo/positioning helper
-    if render.isPositioningHelperBusy() then return false, nil end
+    if render.isPositioningHelperBusy() then return false, emptyVec3 end
 
     -- Only act on a left-click (and avoid UI clicks)
-    if ui.mouseBusy() then return false, nil end
-    if not ui.mouseClicked(ui.MouseButton.Left) then return false, nil end
+    if ui.mouseBusy() then return false, emptyVec3 end
+    if not ui.mouseClicked(ui.MouseButton.Left) then return false, emptyVec3 end
 
     local ray = render.createMouseRay()
 
@@ -73,7 +75,7 @@ UIOperations.tryGetWorldPositionFromMouseClick = function()
         return true, out_worldPosition
     end
 
-    return false, nil
+    return false, emptyVec3
 end
 
 ---Renders a slider with a tooltip

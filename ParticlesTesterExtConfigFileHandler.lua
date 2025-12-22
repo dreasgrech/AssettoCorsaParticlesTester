@@ -1,18 +1,26 @@
 local ParticlesTesterExtConfigFileHandler = {}
 
-local sectionPrefixes = {
-    [ParticleEffectsType.Flame] = 'FLAME',
-    [ParticleEffectsType.Sparks] = 'SPARKS',
-    [ParticleEffectsType.Smoke] = 'SMOKE',
-}
+local MathOperations_splitVelocity = MathOperations.splitVelocity
+
+local SectionPrefixes = ExtConfigDefinitions.SectionPrefixes
+local ExtConfigKeyType = ExtConfigDefinitions.ExtConfigKeyType
+
+--- Temporary vector for direction calculation
+local outDirection = vec3(0, 0, 0)
 
 local writers = {
     [ParticleEffectsType.Flame] = function (file, fullSectionName, effect, position, velocity, amount)
-        file:set(fullSectionName, 'POSITION', position)
-        file:set(fullSectionName, 'VELOCITY', velocity)
-        file:set(fullSectionName, 'AMOUNT', amount)
-        file:set(fullSectionName, 'TEMPERATURE_MULT', effect.temperatureMultiplier)
-        file:set(fullSectionName, 'FLAME_INTENSITY', effect.flameIntensity)
+        local speed, direction = MathOperations_splitVelocity(velocity, outDirection)
+        local color = effect.color
+
+        file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.Position), position)
+        file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.Direction), direction)
+        file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.Speed), speed)
+        file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.Intensity), amount)
+        file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.Color), color)
+        file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.Size), effect.size)
+        file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.TemperatureMult), effect.temperatureMultiplier)
+        file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.FlameIntensity), effect.flameIntensity)
     end,
 }
 
@@ -20,7 +28,7 @@ local writers = {
 ---@param particleEffectsType ParticleEffectsType
 ---@param effectInstance FlameEffectWrapper|SparksEffectWrapper|SmokeEffectWrapper
 ParticlesTesterExtConfigFileHandler.writeToExtConfig = function(extConfigFileType, particleEffectsType, effectInstance)
-    local sectionPrefix = sectionPrefixes[particleEffectsType]
+    local sectionPrefix = SectionPrefixes[particleEffectsType]
     if not sectionPrefix then
         ac.log('Unknown particle effects type: ' .. tostring(particleEffectsType))
         return

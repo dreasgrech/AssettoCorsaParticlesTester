@@ -9,9 +9,11 @@ StringBuilder = require('StringBuilder')
 StorageManager = require('StorageManager')
 UIOperations = require('UIOperations')
 MathOperations = require('MathOperations')
-ExtConfigCodeGenerator = require('ExtConfigCodeGenerator')
 ParticleEffectsManager = require('ParticleEffectsManager')
+ExtConfigDefinitions = require('ExtConfigDefinitions')
+ExtConfigCodeGenerator = require('ExtConfigCodeGenerator')
 ExtConfigFileHandler = require('ExtConfigFileHandler')
+ParticlesTesterExtConfigFileHandler = require("ParticlesTesterExtConfigFileHandler")
 
 -- local bindings
 local ac = ac
@@ -157,7 +159,6 @@ local renderFlamesSection = function()
         ui_sameLine()
 
         local buttonText = flameInstance.waitingForClickToSetPosition and 'Click in the world' or 'Set Position'
-
         if ui_button(buttonText) then
             flameInstance.waitingForClickToSetPosition  = true
         end
@@ -227,7 +228,6 @@ local renderSparksSection = function()
         ui_sameLine()
         
         local buttonText = sparksInstance.waitingForClickToSetPosition and 'Click in the world' or 'Set Position'
-
         if ui_button(buttonText) then
             sparksInstance.waitingForClickToSetPosition = true
         end
@@ -297,7 +297,6 @@ local renderSmokeSection = function()
         ui_sameLine()
         
         local buttonText = smokeInstance.waitingForClickToSetPosition and 'Click in the world' or 'Set Position'
-
         if ui_button(buttonText) then
             smokeInstance.waitingForClickToSetPosition = true
         end
@@ -476,6 +475,22 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     renderExtConfigFormatSection(smokeExtConfigFormat)
     
     -- finish the ext_config_sections table
+    ui_columns(1, false)
+
+    ui_columns(3, true, "export_sections")
+    ui_setColumnWidth(0, COLUMNS_WIDTH)
+    ui_setColumnWidth(1, COLUMNS_WIDTH)
+    ui_setColumnWidth(2, COLUMNS_WIDTH)
+
+    if ui_button('Save to global track config') then
+        ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.Track, ParticleEffectsType.Flame, flameInstance)
+    end
+
+    if ui_button('Save to track layout config') then
+        ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.TrackLayout, ParticleEffectsType.Flame, flameInstance)
+    end
+
+    -- finish the export_sections table
     ui_columns(1, false)
 end
 
