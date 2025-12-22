@@ -69,6 +69,7 @@ local colorPickerFlags = bit.bor(
 local colorPickerSize = vec2(DEFAULT_SLIDER_WIDTH, 20)
 
 local flameInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Flame)
+---@type ac.Particles.Flame
 local flame = flameInstance.effect
 flame.color = storage.flame_color
 flame.size = storage.flame_size
@@ -76,6 +77,7 @@ flame.temperatureMultiplier = storage.flame_temperatureMultiplier
 flame.flameIntensity = storage.flame_flameIntensity
 
 local sparksInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Sparks)
+---@type ac.Particles.Sparks
 local sparks = sparksInstance.effect
 sparks.color = storage.sparks_color
 sparks.size = storage.sparks_size
@@ -84,6 +86,7 @@ sparks.directionSpread = storage.sparks_directionSpread
 sparks.positionSpread = storage.sparks_positionSpread
 
 local smokeInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Smoke)
+---@type ac.Particles.Smoke
 local smoke = smokeInstance.effect
 smoke.color = storage.smoke_color
 smoke.size = storage.smoke_size
@@ -256,9 +259,9 @@ local renderSmokeSection = function()
         storage.smoke_size = renderOptionSlider(StorageManager.Options.Smoke_Size, storage.smoke_size)
         storage.smoke_amount = renderOptionSlider(StorageManager.Options.Smoke_Amount, storage.smoke_amount)
         UIOperations_newLine(1)
+        storage.smoke_life = renderOptionSlider(StorageManager.Options.Smoke_Life, storage.smoke_life)
         storage.smoke_colorConsistency = renderOptionSlider(StorageManager.Options.Smoke_ColorConsistency, storage.smoke_colorConsistency)
         storage.smoke_thickness = renderOptionSlider(StorageManager.Options.Smoke_Thickness, storage.smoke_thickness)
-        storage.smoke_life = renderOptionSlider(StorageManager.Options.Smoke_Life, storage.smoke_life)
         storage.smoke_spreadK = renderOptionSlider(StorageManager.Options.Smoke_SpreadK, storage.smoke_spreadK)
         storage.smoke_growK = renderOptionSlider(StorageManager.Options.Smoke_GrowK, storage.smoke_growK)
         storage.smoke_targetYVelocity = renderOptionSlider(StorageManager.Options.Smoke_TargetYVelocity, storage.smoke_targetYVelocity)
@@ -451,3 +454,40 @@ end
 ---
 function script.MANIFEST__TRANSPARENT(dt)
 end
+
+--[===[
+local extCfgSys = ac.getFolder(ac.FolderID.ExtCfgSys)
+local extCfgUser = ac.getFolder(ac.FolderID.ExtCfgUser)
+local extCfgCurrentTrackLayout = ac.getFolder(ac.FolderID.CurrentTrackLayout)
+
+ac.log('ExtCfgSys folder: ' .. tostring(extCfgSys))
+ac.log('ExtCfgUser folder: ' .. tostring(extCfgUser))
+ac.log('CurrentTrackLayout folder: ' .. tostring(extCfgCurrentTrackLayout))
+
+local currentTrackLayoutFile = extCfgCurrentTrackLayout .. EXT_CONFIG_RELATIVE_PATH
+ac.log('Current track layout ext_config.ini path: ' .. tostring(currentTrackLayoutFile))
+local file = ac.INIConfig.load(currentTrackLayoutFile, ac.INIFormat.Extended, nil)
+
+local largestSectionNameIndex = 0
+for index, section in file:iterate('FLAME') do -- example => index: 1, section: "FLAME_0"
+    ac.log('FLAME section index: ' .. tostring(index))
+    ac.log(section)
+
+    -- extract the numeric part from the section name by taking the substring after 'FLAME_' without using regexes
+    local sectionNameSuffix = string.sub(section, 7) -- 'FLAME_' has 6 characters, so start from the 7th character
+    local sectionNameIndex = tonumber(sectionNameSuffix)
+    if sectionNameIndex and sectionNameIndex > largestSectionNameIndex then
+        largestSectionNameIndex = sectionNameIndex
+    end
+end
+
+local nextSectionNameIndex = largestSectionNameIndex + 1
+-- ac.log('Next FLAME section name index: ' .. tostring(nextSectionNameIndex))
+local nextSectionName = string_format('FLAME_%d', nextSectionNameIndex)
+ac.log('Next FLAME section name: ' .. tostring(nextSectionName))
+
+file:set(nextSectionName, 'POSITION', vec3(0, 0, 0))
+
+--file:save(currentTrackLayoutFile)
+ac.log('Saved ext_config.ini with new FLAME section at: ' .. tostring(currentTrackLayoutFile))
+--]===]

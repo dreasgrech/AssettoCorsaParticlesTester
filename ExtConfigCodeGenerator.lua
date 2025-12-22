@@ -57,52 +57,120 @@ TARGET_Y_VELOCITY = 0.5
 --- Temporary vector for direction calculation
 local outDirection = vec3(0, 0, 0)
 
+---@enum ExtConfigKeyType
+local ExtConfigKeyType = {
+    Position = 0,
+    Direction = 1,
+    Speed = 2,
+    Intensity = 3,
+    Color = 4,
+
+    Size = 5,
+    TemperatureMult = 6,
+    FlameIntensity = 7,
+
+    Life = 8,
+    SpreadDir = 9,
+    SpreadPos = 10,
+
+    ColorConsistency = 11,
+    Spread = 12,
+    Grow = 13,
+    Thickness = 14,
+    -- Life = 15,
+    TargetYVelocity = 16,
+}
+
+local ExtConfigKeyNames = {
+    [ExtConfigKeyType.Position] = "POSITION",
+    [ExtConfigKeyType.Direction] = "DIRECTION",
+    [ExtConfigKeyType.Speed] = "SPEED",
+    [ExtConfigKeyType.Intensity] = "INTENSITY",
+    [ExtConfigKeyType.Color] = "COLOR",
+    [ExtConfigKeyType.Size] = "SIZE",
+
+    [ExtConfigKeyType.TemperatureMult] = "TEMPERATURE_MULT",
+    [ExtConfigKeyType.FlameIntensity] = "FLAME_INTENSITY",
+
+    [ExtConfigKeyType.Life] = "LIFE",
+    [ExtConfigKeyType.SpreadDir] = "SPREAD_DIR",
+    [ExtConfigKeyType.SpreadPos] = "SPREAD_POS",
+
+    [ExtConfigKeyType.ColorConsistency] = "COLOR_CONSISTENCY",
+    [ExtConfigKeyType.Spread] = "SPREAD",
+    [ExtConfigKeyType.Grow] = "GROW",
+    [ExtConfigKeyType.Thickness] = "THICKNESS",
+    [ExtConfigKeyType.TargetYVelocity] = "TARGET_Y_VELOCITY",
+}
+
+---@param effect ac.Particles.Flame|ac.Particles.Smoke|ac.Particles.Sparks
+---@param position vec3
+---@param velocity vec3
+---@param amount number
+---@param header string
 local generateCommon = function(effect, position, velocity, amount, header)
     local speed, direction = MathOperations_splitVelocity(velocity, outDirection)
     local color = effect.color
     
     StringBuilder_append(string.format("[%s_...]", header))
-    StringBuilder_append(string.format("POSITION = %.2f, %.2f, %.2f", position.x, position.y, position.z))
-    StringBuilder_append(string.format("DIRECTION = %.2f, %.2f, %.2f", direction.x, direction.y, direction.z))
-    StringBuilder_append(string.format("SPEED = %.2f", speed))
-    StringBuilder_append(string.format("INTENSITY = %.2f", amount))
-    StringBuilder_append(string.format("COLOR = %.2f, %.2f, %.2f, %.2f", color.r, color.g, color.b, color.mult))
+    StringBuilder_append(string.format("%s = %.2f, %.2f, %.2f", ExtConfigKeyNames[ExtConfigKeyType.Position], position.x, position.y, position.z))
+    StringBuilder_append(string.format("%s = %.2f, %.2f, %.2f", ExtConfigKeyNames[ExtConfigKeyType.Direction], direction.x, direction.y, direction.z))
+    StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.Speed], speed))
+    StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.Intensity], amount))
+    StringBuilder_append(string.format("%s = %.2f, %.2f, %.2f, %.2f", ExtConfigKeyNames[ExtConfigKeyType.Color], color.r, color.g, color.b, color.mult))
+    StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.Size], effect.size))
 end
 
 local generators = {
+    ---@param effect ac.Particles.Flame
+    ---@param position vec3
+    ---@param velocity vec3
+    ---@param amount number
+    ---@return string
     [ParticleEffectsType.Flame] = function (effect, position, velocity, amount)
         StringBuilder_clear()
 
         generateCommon(effect, position, velocity, amount, "FLAME")
 
-        StringBuilder_append(string.format("SIZE = %.2f", effect.size))
-        StringBuilder_append(string.format("TEMPERATURE_MULT = %.2f", effect.temperatureMultiplier))
-        StringBuilder_append(string.format("FLAME_INTENSITY = %.2f", effect.flameIntensity))
+        StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.TemperatureMult], effect.temperatureMultiplier))
+        StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.FlameIntensity], effect.flameIntensity))
 
         return StringBuilder_toString()
     end,
+
+    ---@param effect ac.Particles.Sparks
+    ---@param position vec3
+    ---@param velocity vec3
+    ---@param amount number
+    ---@return string
     [ParticleEffectsType.Sparks] = function (effect, position, velocity, amount)
         StringBuilder_clear()
 
         generateCommon(effect, position, velocity, amount, "SPARKS")
 
-        StringBuilder_append(string.format("LIFE = %.2f", effect.life))
-        StringBuilder_append(string.format("SPREAD_DIR = %.2f", effect.directionSpread))
-        StringBuilder_append(string.format("SPREAD_POS = %.2f", effect.positionSpread))
+        StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.Life], effect.life))
+        StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.SpreadDir], effect.directionSpread))
+        StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.SpreadPos], effect.positionSpread))
 
         return StringBuilder_toString()
     end,
+
+    ---@param effect ac.Particles.Smoke
+    ---@param position vec3
+    ---@param velocity vec3
+    ---@param amount number
+    ---@return string
     [ParticleEffectsType.Smoke] = function (effect, position, velocity, amount)
         StringBuilder_clear()
 
         generateCommon(effect, position, velocity, amount, "SMOKE")
 
-        StringBuilder_append(string.format("COLOR_CONSISTENCY = %.2f", effect.colorConsistency))
-        StringBuilder_append(string.format("SPREAD = %.2f", effect.spreadK))
-        StringBuilder_append(string.format("GROW = %.2f", effect.growK))
-        StringBuilder_append(string.format("THICKNESS = %.2f", effect.thickness))
-        StringBuilder_append(string.format("LIFE = %.2f", effect.life))
-        StringBuilder_append(string.format("TARGET_Y_VELOCITY = %.2f", effect.targetYVelocity))
+        StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.Life], effect.life))
+        StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.ColorConsistency], effect.colorConsistency))
+        StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.Spread], effect.spreadK))
+        StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.Grow], effect.growK))
+        StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.Thickness], effect.thickness))
+        StringBuilder_append(string.format("%s = %.2f", ExtConfigKeyNames[ExtConfigKeyType.TargetYVelocity], effect.targetYVelocity))
 
         return StringBuilder_toString()
     end,
