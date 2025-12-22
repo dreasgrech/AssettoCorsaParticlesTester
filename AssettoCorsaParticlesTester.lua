@@ -71,6 +71,11 @@ local colorPickerSize = vec2(DEFAULT_SLIDER_WIDTH, 20)
 
 ---@type FlameEffectWrapper
 local flameInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Flame)
+flameInstance.enabled = storage.flame_enabled
+flameInstance.position = storage.flame_position
+flameInstance.positionOffset = storage.flame_positionOffset
+flameInstance.velocity = storage.flame_velocity
+flameInstance.amount = storage.flame_amount
 local flame = flameInstance.effect
 flame.color = storage.flame_color
 flame.size = storage.flame_size
@@ -79,7 +84,11 @@ flame.flameIntensity = storage.flame_flameIntensity
 
 ---@type SparksEffectWrapper
 local sparksInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Sparks)
----@type ac.Particles.Sparks
+sparksInstance.enabled = storage.sparks_enabled
+sparksInstance.position = storage.sparks_position
+sparksInstance.positionOffset = storage.sparks_positionOffset
+sparksInstance.velocity = storage.sparks_velocity
+sparksInstance.amount = storage.sparks_amount
 local sparks = sparksInstance.effect
 sparks.color = storage.sparks_color
 sparks.size = storage.sparks_size
@@ -89,7 +98,11 @@ sparks.positionSpread = storage.sparks_positionSpread
 
 ---@type SmokeEffectWrapper
 local smokeInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Smoke)
----@type ac.Particles.Smoke
+smokeInstance.enabled = storage.smoke_enabled
+smokeInstance.position = storage.smoke_position
+smokeInstance.positionOffset = storage.smoke_positionOffset
+smokeInstance.velocity = storage.smoke_velocity
+smokeInstance.amount = storage.smoke_amount
 local smoke = smokeInstance.effect
 smoke.color = storage.smoke_color
 smoke.size = storage.smoke_size
@@ -132,14 +145,14 @@ local renderFlamesSection = function()
     UIOperations_newLine(1)
     
     -- Enabled
-    storage.flame_enabled = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Flame_Enabled], StorageManager__options_tooltip[StorageManager.Options.Flame_Enabled], storage.flame_enabled, StorageManager__options_default[StorageManager.Options.Flame_Enabled])
+    flameInstance.enabled = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Flame_Enabled], StorageManager__options_tooltip[StorageManager.Options.Flame_Enabled], flameInstance.enabled, StorageManager__options_default[StorageManager.Options.Flame_Enabled])
 
     UIOperations_newLine(1)
 
-    UIOperations.createDisabledSection(not storage.flame_enabled, function()
+    UIOperations.createDisabledSection(not flameInstance.enabled, function()
         -- Show the position value label
         ui.alignTextToFramePadding() -- called to align text properly with the button
-        ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.flame_position.x, storage.flame_position.y, storage.flame_position.z))
+        ui_text(string_format('Position: (%.2f, %.2f, %.2f)', flameInstance.position.x, flameInstance.position.y, flameInstance.position.z))
 
         ui_sameLine()
 
@@ -153,27 +166,28 @@ local renderFlamesSection = function()
 
         -- Position Offset
         ui_text(StorageManager__options_label[StorageManager.Options.Flame_PositionOffset])
-        storage.flame_positionOffset = UIOperations.renderVec3Sliders(StorageManager__options_label[StorageManager.Options.Flame_PositionOffset], storage.flame_positionOffset, StorageManager__options_min[StorageManager.Options.Flame_PositionOffset], StorageManager__options_max[StorageManager.Options.Flame_PositionOffset])
+        flameInstance.positionOffset = UIOperations.renderVec3Sliders(StorageManager__options_label[StorageManager.Options.Flame_PositionOffset], flameInstance.positionOffset, StorageManager__options_min[StorageManager.Options.Flame_PositionOffset], StorageManager__options_max[StorageManager.Options.Flame_PositionOffset])
         
         UIOperations_newLine(1)
 
         -- Velocity
         ui_text(StorageManager__options_label[StorageManager.Options.Flame_Velocity])
-        storage.flame_velocity = UIOperations.renderVec3Sliders(StorageManager__options_label[StorageManager.Options.Flame_Velocity], storage.flame_velocity, StorageManager__options_min[StorageManager.Options.Flame_Velocity], StorageManager__options_max[StorageManager.Options.Flame_Velocity])
+        flameInstance.velocity = UIOperations.renderVec3Sliders(StorageManager__options_label[StorageManager.Options.Flame_Velocity], flameInstance.velocity, StorageManager__options_min[StorageManager.Options.Flame_Velocity], StorageManager__options_max[StorageManager.Options.Flame_Velocity])
 
         UIOperations_newLine(1)
 
-        storage.flame_color = UIOperations.renderColorPicker(StorageManager__options_label[StorageManager.Options.Flame_Color], StorageManager__options_tooltip[StorageManager.Options.Flame_Color], storage.flame_color, colorPickerFlags, colorPickerSize)
-        storage.flame_size = renderOptionSlider(StorageManager.Options.Flame_Size, storage.flame_size)
-        storage.flame_amount = renderOptionSlider(StorageManager.Options.Flame_Amount, storage.flame_amount)
+        flame.color = UIOperations.renderColorPicker(StorageManager__options_label[StorageManager.Options.Flame_Color], StorageManager__options_tooltip[StorageManager.Options.Flame_Color], flame.color, colorPickerFlags, colorPickerSize)
+        flame.size = renderOptionSlider(StorageManager.Options.Flame_Size, flame.size)
+        flameInstance.amount = renderOptionSlider(StorageManager.Options.Flame_Amount, flameInstance.amount)
         UIOperations_newLine(1)
-        storage.flame_temperatureMultiplier = renderOptionSlider(StorageManager.Options.Flame_TemperatureMultiplier, storage.flame_temperatureMultiplier)
-        storage.flame_flameIntensity = renderOptionSlider(StorageManager.Options.Flame_FlameIntensity, storage.flame_flameIntensity)
+        flame.temperatureMultiplier = renderOptionSlider(StorageManager.Options.Flame_TemperatureMultiplier, flame.temperatureMultiplier)
+        flame.flameIntensity = renderOptionSlider(StorageManager.Options.Flame_FlameIntensity, flame.flameIntensity)
     end)
     
     ui_popID()
 
     -- Update the flame instance with the stored values
+    --[==[
     flameInstance.enabled = storage.flame_enabled
     flameInstance.position = storage.flame_position
     flameInstance.positionOffset = storage.flame_positionOffset
@@ -184,6 +198,19 @@ local renderFlamesSection = function()
     flame.size = storage.flame_size
     flame.temperatureMultiplier = storage.flame_temperatureMultiplier
     flame.flameIntensity = storage.flame_flameIntensity
+    --]==]
+
+    storage.flame_enabled = flameInstance.enabled
+    storage.flame_position = flameInstance.position
+    storage.flame_positionOffset = flameInstance.positionOffset
+    storage.flame_velocity = flameInstance.velocity
+    storage.flame_amount = flameInstance.amount
+
+    storage.flame_color = flame.color
+    storage.flame_size = flame.size
+    storage.flame_temperatureMultiplier = flame.temperatureMultiplier
+    storage.flame_flameIntensity = flame.flameIntensity
+
 end
 
 local renderSparksSection = function()
@@ -193,14 +220,14 @@ local renderSparksSection = function()
     UIOperations_newLine(1)
     
     -- Enabled
-    storage.sparks_enabled = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Sparks_Enabled], StorageManager__options_tooltip[StorageManager.Options.Sparks_Enabled], storage.sparks_enabled, StorageManager__options_default[StorageManager.Options.Sparks_Enabled])
+    sparksInstance.enabled = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Sparks_Enabled], StorageManager__options_tooltip[StorageManager.Options.Sparks_Enabled], sparksInstance.enabled, StorageManager__options_default[StorageManager.Options.Sparks_Enabled])
     
     UIOperations_newLine(1)
     
-    UIOperations.createDisabledSection(not storage.sparks_enabled, function()
+    UIOperations.createDisabledSection(not sparksInstance.enabled, function()
         -- Show the position value label
         ui.alignTextToFramePadding() -- called to align text properly with the button
-        ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.sparks_position.x, storage.sparks_position.y, storage.sparks_position.z))
+        ui_text(string_format('Position: (%.2f, %.2f, %.2f)', sparksInstance.position.x, sparksInstance.position.y, sparksInstance.position.z))
         
         ui_sameLine()
         
@@ -212,27 +239,28 @@ local renderSparksSection = function()
 
         -- Position Offset
         ui_text(StorageManager__options_label[StorageManager.Options.Sparks_PositionOffset])
-        storage.sparks_positionOffset = UIOperations.renderVec3Sliders(StorageManager__options_label[StorageManager.Options.Sparks_PositionOffset], storage.sparks_positionOffset, StorageManager__options_min[StorageManager.Options.Sparks_PositionOffset], StorageManager__options_max[StorageManager.Options.Sparks_PositionOffset])
+        sparksInstance.positionOffset = UIOperations.renderVec3Sliders(StorageManager__options_label[StorageManager.Options.Sparks_PositionOffset], sparksInstance.positionOffset, StorageManager__options_min[StorageManager.Options.Sparks_PositionOffset], StorageManager__options_max[StorageManager.Options.Sparks_PositionOffset])
 
         UIOperations_newLine(1)
 
         -- Velocity
         ui_text(StorageManager__options_label[StorageManager.Options.Sparks_Velocity])
-        storage.sparks_velocity = UIOperations.renderVec3Sliders(StorageManager__options_label[StorageManager.Options.Sparks_Velocity], storage.sparks_velocity, StorageManager__options_min[StorageManager.Options.Sparks_Velocity], StorageManager__options_max[StorageManager.Options.Sparks_Velocity])
+        sparksInstance.velocity = UIOperations.renderVec3Sliders(StorageManager__options_label[StorageManager.Options.Sparks_Velocity], sparksInstance.velocity, StorageManager__options_min[StorageManager.Options.Sparks_Velocity], StorageManager__options_max[StorageManager.Options.Sparks_Velocity])
         
         UIOperations_newLine(1)
 
-        storage.sparks_color = UIOperations.renderColorPicker(StorageManager__options_label[StorageManager.Options.Sparks_Color], StorageManager__options_tooltip[StorageManager.Options.Sparks_Color], storage.sparks_color, colorPickerFlags, colorPickerSize)
-        storage.sparks_size = renderOptionSlider(StorageManager.Options.Sparks_Size, storage.sparks_size)
-        storage.sparks_amount = renderOptionSlider(StorageManager.Options.Sparks_Amount, storage.sparks_amount)
+        sparks.color = UIOperations.renderColorPicker(StorageManager__options_label[StorageManager.Options.Sparks_Color], StorageManager__options_tooltip[StorageManager.Options.Sparks_Color], sparks.color, colorPickerFlags, colorPickerSize)
+        sparks.size = renderOptionSlider(StorageManager.Options.Sparks_Size, sparks.size)
+        sparksInstance.amount = renderOptionSlider(StorageManager.Options.Sparks_Amount, sparksInstance.amount)
         UIOperations_newLine(1)
-        storage.sparks_life = renderOptionSlider(StorageManager.Options.Sparks_Life, storage.sparks_life)
-        storage.sparks_directionSpread = renderOptionSlider(StorageManager.Options.Sparks_DirectionSpread, storage.sparks_directionSpread)
-        storage.sparks_positionSpread = renderOptionSlider(StorageManager.Options.Sparks_PositionSpread, storage.sparks_positionSpread)
+        sparks.life = renderOptionSlider(StorageManager.Options.Sparks_Life, sparks.life)
+        sparks.directionSpread = renderOptionSlider(StorageManager.Options.Sparks_DirectionSpread, sparks.directionSpread)
+        sparks.positionSpread = renderOptionSlider(StorageManager.Options.Sparks_PositionSpread, sparks.positionSpread)
     end)
     
     ui_popID()
 
+    --[===[
     -- Update the sparks instance with the stored values
     sparksInstance.enabled = storage.sparks_enabled
     sparksInstance.position = storage.sparks_position
@@ -245,6 +273,19 @@ local renderSparksSection = function()
     sparks.size = storage.sparks_size
     sparks.directionSpread = storage.sparks_directionSpread
     sparks.positionSpread = storage.sparks_positionSpread
+    --]===]
+
+    storage.sparks_enabled = sparksInstance.enabled
+    storage.sparks_position = sparksInstance.position
+    storage.sparks_positionOffset = sparksInstance.positionOffset
+    storage.sparks_velocity = sparksInstance.velocity
+    storage.sparks_amount = sparksInstance.amount
+
+    storage.sparks_color = sparks.color
+    storage.sparks_life = sparks.life
+    storage.sparks_size = sparks.size
+    storage.sparks_directionSpread = sparks.directionSpread
+    storage.sparks_positionSpread = sparks.positionSpread
 end
 
 local renderSmokeSection = function()
@@ -254,14 +295,14 @@ local renderSmokeSection = function()
     UIOperations_newLine(1)
     
     -- Enabled
-    storage.smoke_enabled = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Smoke_Enabled], StorageManager__options_tooltip[StorageManager.Options.Smoke_Enabled], storage.smoke_enabled, StorageManager__options_default[StorageManager.Options.Smoke_Enabled])
+    smokeInstance.enabled = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Smoke_Enabled], StorageManager__options_tooltip[StorageManager.Options.Smoke_Enabled], smokeInstance.enabled, StorageManager__options_default[StorageManager.Options.Smoke_Enabled])
     
     UIOperations_newLine(1)
 
-    UIOperations.createDisabledSection(not storage.smoke_enabled, function()
+    UIOperations.createDisabledSection(not smokeInstance.enabled, function()
         -- Show the position value label
         ui.alignTextToFramePadding() -- called to align text properly with the button
-        ui_text(string_format('Position: (%.2f, %.2f, %.2f)', storage.smoke_position.x, storage.smoke_position.y, storage.smoke_position.z))
+        ui_text(string_format('Position: (%.2f, %.2f, %.2f)', smokeInstance.position.x, smokeInstance.position.y, smokeInstance.position.z))
         
         ui_sameLine()
         
@@ -273,33 +314,45 @@ local renderSmokeSection = function()
 
         -- Position Offset
         ui_text(StorageManager__options_label[StorageManager.Options.Smoke_PositionOffset])
-        storage.smoke_positionOffset = UIOperations.renderVec3Sliders(StorageManager__options_label[StorageManager.Options.Smoke_PositionOffset], storage.smoke_positionOffset, StorageManager__options_min[StorageManager.Options.Smoke_PositionOffset], StorageManager__options_max[StorageManager.Options.Smoke_PositionOffset])
+        smokeInstance.positionOffset = UIOperations.renderVec3Sliders(StorageManager__options_label[StorageManager.Options.Smoke_PositionOffset], smokeInstance.positionOffset, StorageManager__options_min[StorageManager.Options.Smoke_PositionOffset], StorageManager__options_max[StorageManager.Options.Smoke_PositionOffset])
 
         UIOperations_newLine(1)
 
         -- Velocity
         ui_text(StorageManager__options_label[StorageManager.Options.Smoke_Velocity])
-        storage.smoke_velocity = UIOperations.renderVec3Sliders(StorageManager__options_label[StorageManager.Options.Smoke_Velocity], storage.smoke_velocity, StorageManager__options_min[StorageManager.Options.Smoke_Velocity], StorageManager__options_max[StorageManager.Options.Smoke_Velocity])
+        smokeInstance.velocity = UIOperations.renderVec3Sliders(StorageManager__options_label[StorageManager.Options.Smoke_Velocity], smokeInstance.velocity, StorageManager__options_min[StorageManager.Options.Smoke_Velocity], StorageManager__options_max[StorageManager.Options.Smoke_Velocity])
         
         UIOperations_newLine(1)
 
-        storage.smoke_color = UIOperations.renderColorPicker(StorageManager__options_label[StorageManager.Options.Smoke_Color], StorageManager__options_tooltip[StorageManager.Options.Smoke_Color], storage.smoke_color, colorPickerFlags, colorPickerSize)
-        storage.smoke_size = renderOptionSlider(StorageManager.Options.Smoke_Size, storage.smoke_size)
-        storage.smoke_amount = renderOptionSlider(StorageManager.Options.Smoke_Amount, storage.smoke_amount)
+        smoke.color = UIOperations.renderColorPicker(StorageManager__options_label[StorageManager.Options.Smoke_Color], StorageManager__options_tooltip[StorageManager.Options.Smoke_Color], smoke.color, colorPickerFlags, colorPickerSize)
+        smoke.size = renderOptionSlider(StorageManager.Options.Smoke_Size, smoke.size)
+        smokeInstance.amount = renderOptionSlider(StorageManager.Options.Smoke_Amount, smokeInstance.amount)
         UIOperations_newLine(1)
-        storage.smoke_life = renderOptionSlider(StorageManager.Options.Smoke_Life, storage.smoke_life)
-        storage.smoke_colorConsistency = renderOptionSlider(StorageManager.Options.Smoke_ColorConsistency, storage.smoke_colorConsistency)
-        storage.smoke_thickness = renderOptionSlider(StorageManager.Options.Smoke_Thickness, storage.smoke_thickness)
-        storage.smoke_spreadK = renderOptionSlider(StorageManager.Options.Smoke_SpreadK, storage.smoke_spreadK)
-        storage.smoke_growK = renderOptionSlider(StorageManager.Options.Smoke_GrowK, storage.smoke_growK)
-        storage.smoke_targetYVelocity = renderOptionSlider(StorageManager.Options.Smoke_TargetYVelocity, storage.smoke_targetYVelocity)
+        smoke.life = renderOptionSlider(StorageManager.Options.Smoke_Life, smoke.life)
+        smoke.colorConsistency = renderOptionSlider(StorageManager.Options.Smoke_ColorConsistency, smoke.colorConsistency)
+        smoke.thickness = renderOptionSlider(StorageManager.Options.Smoke_Thickness, smoke.thickness)
+        smoke.spreadK = renderOptionSlider(StorageManager.Options.Smoke_SpreadK, smoke.spreadK)
+        smoke.growK = renderOptionSlider(StorageManager.Options.Smoke_GrowK, smoke.growK)
+        smoke.targetYVelocity = renderOptionSlider(StorageManager.Options.Smoke_TargetYVelocity, smoke.targetYVelocity)
         UIOperations_newLine(1)
-        storage.smoke_disableCollisions = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Smoke_DisableCollisions], StorageManager__options_tooltip[StorageManager.Options.Smoke_DisableCollisions], storage.smoke_disableCollisions, StorageManager__options_default[StorageManager.Options.Smoke_DisableCollisions])
-        storage.smoke_fadeIn = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Smoke_FadeIn], StorageManager__options_tooltip[StorageManager.Options.Smoke_FadeIn], storage.smoke_fadeIn, StorageManager__options_default[StorageManager.Options.Smoke_FadeIn])
+        
+        smokeInstance.disableCollisions = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Smoke_DisableCollisions], StorageManager__options_tooltip[StorageManager.Options.Smoke_DisableCollisions], smokeInstance.disableCollisions, StorageManager__options_default[StorageManager.Options.Smoke_DisableCollisions])
+        smokeInstance.fadeIn = UIOperations.renderCheckbox(StorageManager__options_label[StorageManager.Options.Smoke_FadeIn], StorageManager__options_tooltip[StorageManager.Options.Smoke_FadeIn], smokeInstance.fadeIn, StorageManager__options_default[StorageManager.Options.Smoke_FadeIn])
+
+        local flags = 0
+        if smokeInstance.disableCollisions then
+            flags = bit.bor(flags, ac.Particles.SmokeFlags.DisableCollisions)
+        end
+        if smokeInstance.fadeIn then
+            flags = bit.bor(flags, ac.Particles.SmokeFlags.FadeIn)
+        end
+        smoke.flags = flags
     end)
     
     ui_popID()
 
+
+    --[===[
     -- Update the smoke instance with the stored values
     smokeInstance.enabled = storage.smoke_enabled
     smokeInstance.position = storage.smoke_position
@@ -324,6 +377,24 @@ local renderSmokeSection = function()
         flags = bit.bor(flags, ac.Particles.SmokeFlags.FadeIn)
     end
     smoke.flags = flags
+    --]===]
+
+    storage.smoke_enabled = smokeInstance.enabled
+    storage.smoke_position = smokeInstance.position
+    storage.smoke_positionOffset = smokeInstance.positionOffset
+    storage.smoke_velocity = smokeInstance.velocity
+    storage.smoke_amount = smokeInstance.amount
+
+    storage.smoke_color = smoke.color
+    storage.smoke_colorConsistency = smoke.colorConsistency
+    storage.smoke_thickness = smoke.thickness
+    storage.smoke_life = smoke.life
+    storage.smoke_size = smoke.size
+    storage.smoke_spreadK = smoke.spreadK
+    storage.smoke_growK = smoke.growK
+    storage.smoke_targetYVelocity = smoke.targetYVelocity
+    storage.smoke_disableCollisions = smokeInstance.disableCollisions
+    storage.smoke_fadeIn = smokeInstance.fadeIn
 end
 
 local COLUMNS_WIDTH = 370
@@ -417,19 +488,22 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     ui_setColumnWidth(2, COLUMNS_WIDTH)
 
     -- Flames ext_config.ini section
-    local flameExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Flame, flame, storage.flame_position + storage.flame_positionOffset, storage.flame_velocity, storage.flame_amount)
+    -- local flameExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Flame, flame, storage.flame_position + storage.flame_positionOffset, storage.flame_velocity, storage.flame_amount)
+    local flameExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Flame, flame, flameInstance.getFinalPosition(), flameInstance.velocity, flameInstance.amount)
     renderExtConfigFormatSection(flameExtConfigFormat)
     
     ui_nextColumn()
     
     -- Sparks ext_config.ini section
-    local sparksExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Sparks, sparks, storage.sparks_position + storage.sparks_positionOffset, storage.sparks_velocity, storage.sparks_amount)
+    -- local sparksExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Sparks, sparks, storage.sparks_position + storage.sparks_positionOffset, storage.sparks_velocity, storage.sparks_amount)
+    local sparksExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Sparks, sparks, sparksInstance.getFinalPosition(), sparksInstance.velocity, sparksInstance.amount)
     renderExtConfigFormatSection(sparksExtConfigFormat)
     
     ui_nextColumn()
     
     -- Smoke ext_config.ini section
-    local smokeExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Smoke, smoke, storage.smoke_position + storage.smoke_positionOffset, storage.smoke_velocity, storage.smoke_amount)
+    -- local smokeExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Smoke, smoke, storage.smoke_position + storage.smoke_positionOffset, storage.smoke_velocity, storage.smoke_amount)
+    local smokeExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Smoke, smoke, smokeInstance.getFinalPosition(), smokeInstance.velocity, smokeInstance.amount)
     renderExtConfigFormatSection(smokeExtConfigFormat)
     
     -- finish the ext_config_sections table
@@ -445,6 +519,7 @@ function script.MANIFEST__UPDATE(dt)
         if worldPositionFound then
             ac.log('Flame position set to: ' .. tostring(out_worldPosition))
             storage.flame_position = out_worldPosition
+            flameInstance.position = out_worldPosition
             flameInstance.waitingForClickToSetPosition    = false
         end
     end
@@ -454,6 +529,7 @@ function script.MANIFEST__UPDATE(dt)
         if worldPositionFound then
             ac.log('Sparks position set to: ' .. tostring(out_worldPosition))
             storage.sparks_position = out_worldPosition
+            sparksInstance.position = out_worldPosition
             sparksInstance.waitingForClickToSetPosition = false
         end
     end
@@ -463,6 +539,7 @@ function script.MANIFEST__UPDATE(dt)
         if worldPositionFound then
             ac.log('Smoke position set to: ' .. tostring(out_worldPosition))
             storage.smoke_position = out_worldPosition
+            smokeInstance.position = out_worldPosition
             smokeInstance.waitingForClickToSetPosition = false
         end
     end

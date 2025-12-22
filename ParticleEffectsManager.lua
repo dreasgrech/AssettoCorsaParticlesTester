@@ -29,6 +29,8 @@
 ---@field waitingForClickToSetPosition boolean
 ---@field getFinalPosition fun():vec3
 ---@field effect ac.Particles.Smoke
+---@field disableCollisions boolean
+---@field fadeIn boolean
 
 local generateWrapper = function(effect)
     local wrapper = {
@@ -103,6 +105,8 @@ local generators = {
             })
 
             local obj = generateWrapper(smoke)
+            obj.disableCollisions = false
+            obj.fadeIn = false
             return obj;
         end)()
 
