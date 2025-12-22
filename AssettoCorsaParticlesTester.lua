@@ -449,8 +449,10 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     
     -- finish the sections table
     ui_columns(1, false)
+
+    UIOperations_newLine(1)
     
-    ui.separator()
+    --ui.separator()
     
     -- The table for the ext_config.ini code sections
     ui_columns(3, true, "ext_config_sections")
@@ -477,11 +479,14 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     -- finish the ext_config_sections table
     ui_columns(1, false)
 
+    UIOperations_newLine(1)
+
     ui_columns(3, true, "export_sections")
     ui_setColumnWidth(0, COLUMNS_WIDTH)
     ui_setColumnWidth(1, COLUMNS_WIDTH)
     ui_setColumnWidth(2, COLUMNS_WIDTH)
 
+    ui_pushID("ExportFlameSparksSection")
     if ui_button('Save to global track config') then
         ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.Track, ParticleEffectsType.Flame, flameInstance)
     end
@@ -489,6 +494,32 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     if ui_button('Save to track layout config') then
         ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.TrackLayout, ParticleEffectsType.Flame, flameInstance)
     end
+    ui_popID()
+
+    ui_nextColumn()
+
+    ui_pushID("ExportFlameSparksSection")
+    if ui_button('Save to global track config') then
+        ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.Track, ParticleEffectsType.Sparks, sparksInstance)
+    end
+
+    if ui_button('Save to track layout config') then
+        ac.log('Saving sparks to track layout ext_config.ini')
+        ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.TrackLayout, ParticleEffectsType.Sparks, sparksInstance)
+    end
+    ui_popID()
+
+    ui_nextColumn()
+
+    ui_pushID("ExportSmokeSection")
+    if ui_button('Save to global track config') then
+        ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.Track, ParticleEffectsType.Smoke, smokeInstance)
+    end
+
+    if ui_button('Save to track layout config') then
+        ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.TrackLayout, ParticleEffectsType.Smoke, smokeInstance)
+    end
+    ui_popID()
 
     -- finish the export_sections table
     ui_columns(1, false)
