@@ -13,7 +13,7 @@ ParticleEffectsManager = require('ParticleEffectsManager')
 ExtConfigDefinitions = require('ExtConfigDefinitions')
 ExtConfigCodeGenerator = require('ExtConfigCodeGenerator')
 ExtConfigFileHandler = require('ExtConfigFileHandler')
-ParticlesTesterExtConfigFileHandler = require("ParticlesTesterExtConfigFileHandler")
+ParticleEffectsExtConfigFileHandler = require("ParticleEffectsExtConfigFileHandler")
 
 -- local bindings
 local ac = ac
@@ -417,7 +417,7 @@ end
 -- wiki: function to be called each frame to draw window content
 ---
 function script.MANIFEST__FUNCTION_MAIN(dt)
-    ui.textColored('Assetto Corsa Particles Tester is a helper app for adding particle effects to tracks.', rgbm(1, 1, 1, 1))
+    ui.textColored('Assetto Corsa Particle Effects is a helper app for adding particle effects to tracks.', rgbm(1, 1, 1, 1))
     UIOperations_newLine(1)
     ui.textColored('To add a particle effect to this track, first set a position using the button and once you are satisfied with your options, click the generated code below and paste it into the', rgbm(1, 1, 1, 1))
     ui_sameLine()
@@ -488,11 +488,11 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
 
     ui_pushID("ExportFlameSparksSection")
     if ui_button('Save to global track config') then
-        ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.Track, ParticleEffectsType.Flame, flameInstance)
+        ParticleEffectsExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.Track, ParticleEffectsType.Flame, flameInstance)
     end
 
     if ui_button('Save to track layout config') then
-        ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.TrackLayout, ParticleEffectsType.Flame, flameInstance)
+        ParticleEffectsExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.TrackLayout, ParticleEffectsType.Flame, flameInstance)
     end
     ui_popID()
 
@@ -500,12 +500,12 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
 
     ui_pushID("ExportFlameSparksSection")
     if ui_button('Save to global track config') then
-        ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.Track, ParticleEffectsType.Sparks, sparksInstance)
+        ParticleEffectsExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.Track, ParticleEffectsType.Sparks, sparksInstance)
     end
 
     if ui_button('Save to track layout config') then
         ac.log('Saving sparks to track layout ext_config.ini')
-        ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.TrackLayout, ParticleEffectsType.Sparks, sparksInstance)
+        ParticleEffectsExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.TrackLayout, ParticleEffectsType.Sparks, sparksInstance)
     end
     ui_popID()
 
@@ -513,11 +513,11 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
 
     ui_pushID("ExportSmokeSection")
     if ui_button('Save to global track config') then
-        ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.Track, ParticleEffectsType.Smoke, smokeInstance)
+        ParticleEffectsExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.Track, ParticleEffectsType.Smoke, smokeInstance)
     end
 
     if ui_button('Save to track layout config') then
-        ParticlesTesterExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.TrackLayout, ParticleEffectsType.Smoke, smokeInstance)
+        ParticleEffectsExtConfigFileHandler.writeToExtConfig(ExtConfigFileHandler.ExtConfigFileTypes.TrackLayout, ParticleEffectsType.Smoke, smokeInstance)
     end
     ui_popID()
 

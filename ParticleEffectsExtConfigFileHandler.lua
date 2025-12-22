@@ -1,4 +1,4 @@
-local ParticlesTesterExtConfigFileHandler = {}
+local ParticleEffectsExtConfigFileHandler = {}
 
 local MathOperations_splitVelocity = MathOperations.splitVelocity
 
@@ -85,7 +85,7 @@ local writers = {
 ---@param extConfigFileType ExtConfigFileHandler.ExtConfigFileTypes
 ---@param particleEffectsType ParticleEffectsType
 ---@param effectInstance FlameEffectWrapper|SparksEffectWrapper|SmokeEffectWrapper
-ParticlesTesterExtConfigFileHandler.writeToExtConfig = function(extConfigFileType, particleEffectsType, effectInstance)
+ParticleEffectsExtConfigFileHandler.writeToExtConfig = function(extConfigFileType, particleEffectsType, effectInstance)
     local sectionPrefix = SectionPrefixes[particleEffectsType]
     if not sectionPrefix then
         ac.log('Unknown particle effects type: ' .. tostring(particleEffectsType))
@@ -109,4 +109,4 @@ ParticlesTesterExtConfigFileHandler.writeToExtConfig = function(extConfigFileTyp
 
 end
 
-return ParticlesTesterExtConfigFileHandler
+return ParticleEffectsExtConfigFileHandler
