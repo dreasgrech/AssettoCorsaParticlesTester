@@ -11,6 +11,7 @@ UIOperations = require('UIOperations')
 MathOperations = require('MathOperations')
 ExtConfigCodeGenerator = require('ExtConfigCodeGenerator')
 ParticleEffectsManager = require('ParticleEffectsManager')
+ExtConfigFileHandler = require('ExtConfigFileHandler')
 
 -- local bindings
 local ac = ac
@@ -68,14 +69,15 @@ local colorPickerFlags = bit.bor(
 )
 local colorPickerSize = vec2(DEFAULT_SLIDER_WIDTH, 20)
 
+---@type FlameEffectWrapper
 local flameInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Flame)
----@type ac.Particles.Flame
 local flame = flameInstance.effect
 flame.color = storage.flame_color
 flame.size = storage.flame_size
 flame.temperatureMultiplier = storage.flame_temperatureMultiplier
 flame.flameIntensity = storage.flame_flameIntensity
 
+---@type SparksEffectWrapper
 local sparksInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Sparks)
 ---@type ac.Particles.Sparks
 local sparks = sparksInstance.effect
@@ -85,6 +87,7 @@ sparks.life = storage.sparks_life
 sparks.directionSpread = storage.sparks_directionSpread
 sparks.positionSpread = storage.sparks_positionSpread
 
+---@type SmokeEffectWrapper
 local smokeInstance = ParticleEffectsManager.generateParticleEffect(ParticleEffectsType.Smoke)
 ---@type ac.Particles.Smoke
 local smoke = smokeInstance.effect
@@ -169,6 +172,18 @@ local renderFlamesSection = function()
     end)
     
     ui_popID()
+
+    -- Update the flame instance with the stored values
+    flameInstance.enabled = storage.flame_enabled
+    flameInstance.position = storage.flame_position
+    flameInstance.positionOffset = storage.flame_positionOffset
+    flameInstance.velocity = storage.flame_velocity
+    flameInstance.amount = storage.flame_amount
+
+    flame.color = storage.flame_color
+    flame.size = storage.flame_size
+    flame.temperatureMultiplier = storage.flame_temperatureMultiplier
+    flame.flameIntensity = storage.flame_flameIntensity
 end
 
 local renderSparksSection = function()
@@ -217,6 +232,19 @@ local renderSparksSection = function()
     end)
     
     ui_popID()
+
+    -- Update the sparks instance with the stored values
+    sparksInstance.enabled = storage.sparks_enabled
+    sparksInstance.position = storage.sparks_position
+    sparksInstance.positionOffset = storage.sparks_positionOffset
+    sparksInstance.velocity = storage.sparks_velocity
+    sparksInstance.amount = storage.sparks_amount
+
+    sparks.color = storage.sparks_color
+    sparks.life = storage.sparks_life
+    sparks.size = storage.sparks_size
+    sparks.directionSpread = storage.sparks_directionSpread
+    sparks.positionSpread = storage.sparks_positionSpread
 end
 
 local renderSmokeSection = function()
@@ -271,6 +299,31 @@ local renderSmokeSection = function()
     end)
     
     ui_popID()
+
+    -- Update the smoke instance with the stored values
+    smokeInstance.enabled = storage.smoke_enabled
+    smokeInstance.position = storage.smoke_position
+    smokeInstance.positionOffset = storage.smoke_positionOffset
+    smokeInstance.velocity = storage.smoke_velocity
+    smokeInstance.amount = storage.smoke_amount
+
+    smoke.color = storage.smoke_color
+    smoke.colorConsistency = storage.smoke_colorConsistency
+    smoke.thickness = storage.smoke_thickness
+    smoke.life = storage.smoke_life
+    smoke.size = storage.smoke_size
+    smoke.spreadK = storage.smoke_spreadK
+    smoke.growK = storage.smoke_growK
+    smoke.targetYVelocity = storage.smoke_targetYVelocity
+    
+    local flags = 0
+    if storage.smoke_disableCollisions then
+        flags = bit.bor(flags, ac.Particles.SmokeFlags.DisableCollisions)
+    end
+    if storage.smoke_fadeIn then
+        flags = bit.bor(flags, ac.Particles.SmokeFlags.FadeIn)
+    end
+    smoke.flags = flags
 end
 
 local COLUMNS_WIDTH = 370
@@ -289,6 +342,7 @@ local renderExtConfigFormatSection = function(extConfigFormat)
     end
 end
 
+-- TODO: most of this stuff has moved to ExtConfigFileHandler.lua - refactor this to use that module properly
 local EXTENSION_PATH = '/extension/'
 local EXT_CONFIG_FILENAME = 'ext_config.ini'
 local EXT_CONFIG_RELATIVE_PATH = EXTENSION_PATH .. EXT_CONFIG_FILENAME
@@ -338,14 +392,17 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     ui_setColumnWidth(1, COLUMNS_WIDTH)
     ui_setColumnWidth(2, COLUMNS_WIDTH)
 
+    -- Flames section
     renderFlamesSection()
     
     ui_nextColumn()
 
+    -- Sparks section
     renderSparksSection()
     
     ui_nextColumn()
     
+    -- Smoke section
     renderSmokeSection()
     
     -- finish the sections table
@@ -353,21 +410,25 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     
     ui.separator()
     
+    -- The table for the ext_config.ini code sections
     ui_columns(3, true, "ext_config_sections")
     ui_setColumnWidth(0, COLUMNS_WIDTH)
     ui_setColumnWidth(1, COLUMNS_WIDTH)
     ui_setColumnWidth(2, COLUMNS_WIDTH)
 
+    -- Flames ext_config.ini section
     local flameExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Flame, flame, storage.flame_position + storage.flame_positionOffset, storage.flame_velocity, storage.flame_amount)
     renderExtConfigFormatSection(flameExtConfigFormat)
     
     ui_nextColumn()
     
+    -- Sparks ext_config.ini section
     local sparksExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Sparks, sparks, storage.sparks_position + storage.sparks_positionOffset, storage.sparks_velocity, storage.sparks_amount)
     renderExtConfigFormatSection(sparksExtConfigFormat)
     
     ui_nextColumn()
     
+    -- Smoke ext_config.ini section
     local smokeExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Smoke, smoke, storage.smoke_position + storage.smoke_positionOffset, storage.smoke_velocity, storage.smoke_amount)
     renderExtConfigFormatSection(smokeExtConfigFormat)
     
@@ -379,7 +440,7 @@ end
 -- wiki: called after a whole simulation update
 ---
 function script.MANIFEST__UPDATE(dt)
-    if flameInstance.waitingForClickToSetPosition   then
+    if flameInstance.waitingForClickToSetPosition then
         local worldPositionFound, out_worldPosition = UIOperations.tryGetWorldPositionFromMouseClick()
         if worldPositionFound then
             ac.log('Flame position set to: ' .. tostring(out_worldPosition))
@@ -406,46 +467,16 @@ function script.MANIFEST__UPDATE(dt)
         end
     end
     
-    if storage.flame_enabled then
-        flame.color = storage.flame_color
-        flame.size = storage.flame_size
-        flame.temperatureMultiplier = storage.flame_temperatureMultiplier
-        flame.flameIntensity = storage.flame_flameIntensity
-        local position = storage.flame_position + storage.flame_positionOffset
-        flame:emit(position, storage.flame_velocity, storage.flame_amount)
+    if flameInstance.enabled then
+        flame:emit(flameInstance.getFinalPosition(), flameInstance.velocity, flameInstance.amount)
     end
     
-    if storage.sparks_enabled then
-        sparks.color = storage.sparks_color
-        sparks.life = storage.sparks_life
-        sparks.size = storage.sparks_size
-        sparks.directionSpread = storage.sparks_directionSpread
-        sparks.positionSpread = storage.sparks_positionSpread
-        local position = storage.sparks_position + storage.sparks_positionOffset
-        sparks:emit(position, storage.sparks_velocity, storage.sparks_amount)
+    if sparksInstance.enabled then
+        sparks:emit(sparksInstance.getFinalPosition(), sparksInstance.velocity, sparksInstance.amount)
     end
     
-    if storage.smoke_enabled then
-        smoke.color = storage.smoke_color
-        smoke.colorConsistency = storage.smoke_colorConsistency
-        smoke.thickness = storage.smoke_thickness
-        smoke.life = storage.smoke_life
-        smoke.size = storage.smoke_size
-        smoke.spreadK = storage.smoke_spreadK
-        smoke.growK = storage.smoke_growK
-        smoke.targetYVelocity = storage.smoke_targetYVelocity
-        
-        local flags = 0
-        if storage.smoke_disableCollisions then
-            flags = bit.bor(flags, ac.Particles.SmokeFlags.DisableCollisions)
-        end
-        if storage.smoke_fadeIn then
-            flags = bit.bor(flags, ac.Particles.SmokeFlags.FadeIn)
-        end
-        smoke.flags = flags
-
-        local position = storage.smoke_position + storage.smoke_positionOffset
-        smoke:emit(position, storage.smoke_velocity, storage.smoke_amount)
+    if smokeInstance.enabled then
+        smoke:emit(smokeInstance.getFinalPosition(), smokeInstance.velocity, smokeInstance.amount)
     end
 end
 
@@ -455,7 +486,7 @@ end
 function script.MANIFEST__TRANSPARENT(dt)
 end
 
---[===[
+--[==[
 local extCfgSys = ac.getFolder(ac.FolderID.ExtCfgSys)
 local extCfgUser = ac.getFolder(ac.FolderID.ExtCfgUser)
 local extCfgCurrentTrackLayout = ac.getFolder(ac.FolderID.CurrentTrackLayout)
@@ -490,4 +521,11 @@ file:set(nextSectionName, 'POSITION', vec3(0, 0, 0))
 
 --file:save(currentTrackLayoutFile)
 ac.log('Saved ext_config.ini with new FLAME section at: ' .. tostring(currentTrackLayoutFile))
---]===]
+--]==]
+
+--[==[
+ExtConfigFileHandler.writeNewSectionToExtConfigFile(ExtConfigFileHandler.ExtConfigFileTypes.TrackLayout, 'FLAME', function(file, fullSectionName)
+    file:set(fullSectionName, 'POSITION', vec3(0, 0, 0))
+    ac.log('Wrote POSITION to section: ' .. tostring(fullSectionName))
+end)
+--]==]
