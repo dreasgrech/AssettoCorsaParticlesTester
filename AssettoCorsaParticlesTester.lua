@@ -186,20 +186,16 @@ local renderFlamesSection = function()
     
     ui_popID()
 
-    -- Update the flame instance with the stored values
-    --[==[
-    flameInstance.enabled = storage.flame_enabled
-    flameInstance.position = storage.flame_position
-    flameInstance.positionOffset = storage.flame_positionOffset
-    flameInstance.velocity = storage.flame_velocity
-    flameInstance.amount = storage.flame_amount
+    if flameInstance.waitingForClickToSetPosition then
+        local worldPositionFound, out_worldPosition = UIOperations.tryGetWorldPositionFromMouseClick()
+        if worldPositionFound then
+            ac.log('Flame position set to: ' .. tostring(out_worldPosition))
+            flameInstance.position = out_worldPosition
+            flameInstance.waitingForClickToSetPosition = false
+        end
+    end
 
-    flame.color = storage.flame_color
-    flame.size = storage.flame_size
-    flame.temperatureMultiplier = storage.flame_temperatureMultiplier
-    flame.flameIntensity = storage.flame_flameIntensity
-    --]==]
-
+    -- Update the storage values with the instance values
     storage.flame_enabled = flameInstance.enabled
     storage.flame_position = flameInstance.position
     storage.flame_positionOffset = flameInstance.positionOffset
@@ -210,7 +206,6 @@ local renderFlamesSection = function()
     storage.flame_size = flame.size
     storage.flame_temperatureMultiplier = flame.temperatureMultiplier
     storage.flame_flameIntensity = flame.flameIntensity
-
 end
 
 local renderSparksSection = function()
@@ -260,21 +255,16 @@ local renderSparksSection = function()
     
     ui_popID()
 
-    --[===[
-    -- Update the sparks instance with the stored values
-    sparksInstance.enabled = storage.sparks_enabled
-    sparksInstance.position = storage.sparks_position
-    sparksInstance.positionOffset = storage.sparks_positionOffset
-    sparksInstance.velocity = storage.sparks_velocity
-    sparksInstance.amount = storage.sparks_amount
+    if sparksInstance.waitingForClickToSetPosition then
+        local worldPositionFound, out_worldPosition = UIOperations.tryGetWorldPositionFromMouseClick()
+        if worldPositionFound then
+            ac.log('Sparks position set to: ' .. tostring(out_worldPosition))
+            sparksInstance.position = out_worldPosition
+            sparksInstance.waitingForClickToSetPosition = false
+        end
+    end
 
-    sparks.color = storage.sparks_color
-    sparks.life = storage.sparks_life
-    sparks.size = storage.sparks_size
-    sparks.directionSpread = storage.sparks_directionSpread
-    sparks.positionSpread = storage.sparks_positionSpread
-    --]===]
-
+    -- Update the storage values with the instance values
     storage.sparks_enabled = sparksInstance.enabled
     storage.sparks_position = sparksInstance.position
     storage.sparks_positionOffset = sparksInstance.positionOffset
@@ -351,34 +341,16 @@ local renderSmokeSection = function()
     
     ui_popID()
 
-
-    --[===[
-    -- Update the smoke instance with the stored values
-    smokeInstance.enabled = storage.smoke_enabled
-    smokeInstance.position = storage.smoke_position
-    smokeInstance.positionOffset = storage.smoke_positionOffset
-    smokeInstance.velocity = storage.smoke_velocity
-    smokeInstance.amount = storage.smoke_amount
-
-    smoke.color = storage.smoke_color
-    smoke.colorConsistency = storage.smoke_colorConsistency
-    smoke.thickness = storage.smoke_thickness
-    smoke.life = storage.smoke_life
-    smoke.size = storage.smoke_size
-    smoke.spreadK = storage.smoke_spreadK
-    smoke.growK = storage.smoke_growK
-    smoke.targetYVelocity = storage.smoke_targetYVelocity
-    
-    local flags = 0
-    if storage.smoke_disableCollisions then
-        flags = bit.bor(flags, ac.Particles.SmokeFlags.DisableCollisions)
+    if smokeInstance.waitingForClickToSetPosition then
+        local worldPositionFound, out_worldPosition = UIOperations.tryGetWorldPositionFromMouseClick()
+        if worldPositionFound then
+            ac.log('Smoke position set to: ' .. tostring(out_worldPosition))
+            smokeInstance.position = out_worldPosition
+            smokeInstance.waitingForClickToSetPosition = false
+        end
     end
-    if storage.smoke_fadeIn then
-        flags = bit.bor(flags, ac.Particles.SmokeFlags.FadeIn)
-    end
-    smoke.flags = flags
-    --]===]
 
+    -- Update the storage values with the instance values
     storage.smoke_enabled = smokeInstance.enabled
     storage.smoke_position = smokeInstance.position
     storage.smoke_positionOffset = smokeInstance.positionOffset
@@ -488,21 +460,18 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     ui_setColumnWidth(2, COLUMNS_WIDTH)
 
     -- Flames ext_config.ini section
-    -- local flameExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Flame, flame, storage.flame_position + storage.flame_positionOffset, storage.flame_velocity, storage.flame_amount)
     local flameExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Flame, flame, flameInstance.getFinalPosition(), flameInstance.velocity, flameInstance.amount)
     renderExtConfigFormatSection(flameExtConfigFormat)
     
     ui_nextColumn()
     
     -- Sparks ext_config.ini section
-    -- local sparksExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Sparks, sparks, storage.sparks_position + storage.sparks_positionOffset, storage.sparks_velocity, storage.sparks_amount)
     local sparksExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Sparks, sparks, sparksInstance.getFinalPosition(), sparksInstance.velocity, sparksInstance.amount)
     renderExtConfigFormatSection(sparksExtConfigFormat)
     
     ui_nextColumn()
     
     -- Smoke ext_config.ini section
-    -- local smokeExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Smoke, smoke, storage.smoke_position + storage.smoke_positionOffset, storage.smoke_velocity, storage.smoke_amount)
     local smokeExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Smoke, smoke, smokeInstance.getFinalPosition(), smokeInstance.velocity, smokeInstance.amount)
     renderExtConfigFormatSection(smokeExtConfigFormat)
     
@@ -514,36 +483,6 @@ end
 -- wiki: called after a whole simulation update
 ---
 function script.MANIFEST__UPDATE(dt)
-    if flameInstance.waitingForClickToSetPosition then
-        local worldPositionFound, out_worldPosition = UIOperations.tryGetWorldPositionFromMouseClick()
-        if worldPositionFound then
-            ac.log('Flame position set to: ' .. tostring(out_worldPosition))
-            storage.flame_position = out_worldPosition
-            flameInstance.position = out_worldPosition
-            flameInstance.waitingForClickToSetPosition    = false
-        end
-    end
-    
-    if sparksInstance.waitingForClickToSetPosition then
-        local worldPositionFound, out_worldPosition = UIOperations.tryGetWorldPositionFromMouseClick()
-        if worldPositionFound then
-            ac.log('Sparks position set to: ' .. tostring(out_worldPosition))
-            storage.sparks_position = out_worldPosition
-            sparksInstance.position = out_worldPosition
-            sparksInstance.waitingForClickToSetPosition = false
-        end
-    end
-    
-    if smokeInstance.waitingForClickToSetPosition then
-        local worldPositionFound, out_worldPosition = UIOperations.tryGetWorldPositionFromMouseClick()
-        if worldPositionFound then
-            ac.log('Smoke position set to: ' .. tostring(out_worldPosition))
-            storage.smoke_position = out_worldPosition
-            smokeInstance.position = out_worldPosition
-            smokeInstance.waitingForClickToSetPosition = false
-        end
-    end
-    
     if flameInstance.enabled then
         flame:emit(flameInstance.getFinalPosition(), flameInstance.velocity, flameInstance.amount)
     end
