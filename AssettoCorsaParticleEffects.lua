@@ -417,7 +417,7 @@ end
 -- wiki: function to be called each frame to draw window content
 ---
 function script.MANIFEST__FUNCTION_MAIN(dt)
-    ui.textColored('Assetto Corsa Particle Effects is a helper app for adding particle effects to tracks.', rgbm(1, 1, 1, 1))
+    ui.textColored('Particle Effects is a helper app for adding particle effects to tracks.', rgbm(1, 1, 1, 1))
     UIOperations_newLine(1)
     ui.textColored('To add a particle effect to this track, first set a position using the button and once you are satisfied with your options, click the generated code below and paste it into the', rgbm(1, 1, 1, 1))
     ui_sameLine()
