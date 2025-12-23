@@ -29,7 +29,7 @@ local writers = {
         file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.TemperatureMult), effect.temperatureMultiplier)
         file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.FlameIntensity), effect.flameIntensity)
 
-        ac.log(string.format("Wrote FLAME section %s", fullSectionName))
+        -- ac.log(string.format("Wrote FLAME section %s", fullSectionName))
     end,
     ---@param file ac.INIConfig
     ---@param fullSectionName string
@@ -52,7 +52,7 @@ local writers = {
         file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.SpreadDir), effect.directionSpread)
         file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.SpreadPos), effect.positionSpread)
 
-        ac.log(string.format("Wrote SPARKS section %s", fullSectionName))
+        -- ac.log(string.format("Wrote SPARKS section %s", fullSectionName))
     end,
     ---@param file ac.INIConfig
     ---@param fullSectionName string
@@ -78,7 +78,7 @@ local writers = {
         file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.Thickness), effect.thickness)
         file:set(fullSectionName, ExtConfigCodeGenerator.getExtConfigKeyName(ExtConfigKeyType.TargetYVelocity), effect.targetYVelocity)
 
-        ac.log(string.format("Wrote SMOKE section %s", fullSectionName))
+        -- ac.log(string.format("Wrote SMOKE section %s", fullSectionName))
     end,
 }
 
@@ -92,7 +92,7 @@ ParticleEffectsExtConfigFileHandler.writeToExtConfig = function(extConfigFileTyp
         return
     end
 
-    ac.log(string.format("Writing particle effect of type %d to ext_config file type %d", particleEffectsType, extConfigFileType))
+    -- ac.log(string.format("Writing particle effect of type %d to ext_config file type %d", particleEffectsType, extConfigFileType))
 
     ExtConfigFileHandler.writeNewSectionToExtConfigFile(
         extConfigFileType,
@@ -106,7 +106,6 @@ ParticleEffectsExtConfigFileHandler.writeToExtConfig = function(extConfigFileTyp
             writers[particleEffectsType](file, fullSectionName, effect, position, velocity, amount)
         end
     )
-
 end
 
 return ParticleEffectsExtConfigFileHandler

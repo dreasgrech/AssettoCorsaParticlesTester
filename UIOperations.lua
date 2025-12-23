@@ -41,6 +41,27 @@ UIOperations.renderColorPicker = function(label, tooltip, color, flags, size)
     return color
 end
 
+-- UIOperations.renderButton = function(label, tooltip, width, height)
+UIOperations.renderButton = function(label, tooltip, rightClickCallback)
+    -- ui_pushItemWidth(width)
+    -- local clicked = ui.button(label, vec2(width, height))
+    -- ui_popItemWidth()
+    local clicked = ui.button(label)
+
+    if rightClickCallback ~= nil then
+        if ui.itemClicked(ui.MouseButton.Right, true) then
+            rightClickCallback()
+        end
+    end
+
+    if ui_itemHovered() then
+        -- render the tooltip
+        ui_setTooltip(tooltip)
+    end
+
+    return clicked
+end
+
 local emptyVec3 = vec3(0, 0, 0)
 
 ---Tries to get world position from mouse click.
