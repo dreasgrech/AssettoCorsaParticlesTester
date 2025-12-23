@@ -525,20 +525,26 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     ui_setColumnWidth(2, COLUMNS_WIDTH)
 
     -- Flames ext_config.ini section
-    local flameExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Flame, flame, flameInstance.getFinalPosition(), flameInstance.velocity, flameInstance.amount)
-    renderExtConfigFormatSection(flameExtConfigFormat)
+    UIOperations.createDisabledSection(not flameInstance.enabled, function()
+        local flameExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Flame, flame, flameInstance.getFinalPosition(), flameInstance.velocity, flameInstance.amount)
+        renderExtConfigFormatSection(flameExtConfigFormat)
+    end)
     
     ui_nextColumn()
     
     -- Sparks ext_config.ini section
-    local sparksExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Sparks, sparks, sparksInstance.getFinalPosition(), sparksInstance.velocity, sparksInstance.amount)
-    renderExtConfigFormatSection(sparksExtConfigFormat)
+    UIOperations.createDisabledSection(not sparksInstance.enabled, function()
+        local sparksExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Sparks, sparks, sparksInstance.getFinalPosition(), sparksInstance.velocity, sparksInstance.amount)
+        renderExtConfigFormatSection(sparksExtConfigFormat)
+    end)
     
     ui_nextColumn()
     
     -- Smoke ext_config.ini section
-    local smokeExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Smoke, smoke, smokeInstance.getFinalPosition(), smokeInstance.velocity, smokeInstance.amount)
-    renderExtConfigFormatSection(smokeExtConfigFormat)
+    UIOperations.createDisabledSection(not smokeInstance.enabled, function()
+        local smokeExtConfigFormat = ExtConfigCodeGenerator.generateCode(ParticleEffectsType.Smoke, smoke, smokeInstance.getFinalPosition(), smokeInstance.velocity, smokeInstance.amount)
+        renderExtConfigFormatSection(smokeExtConfigFormat)
+    end)
     
     -- finish the ext_config_sections table
     ui_columns(1, false)
@@ -550,20 +556,26 @@ function script.MANIFEST__FUNCTION_MAIN(dt)
     ui_setColumnWidth(1, COLUMNS_WIDTH)
     ui_setColumnWidth(2, COLUMNS_WIDTH)
 
-    ui_pushID("ExportFlameSparksSection")
-    renderExportButtons(ParticleEffectsType.Flame, flameInstance)
+    ui_pushID("ExportFlameSection")
+    UIOperations.createDisabledSection(not flameInstance.enabled, function()
+        renderExportButtons(ParticleEffectsType.Flame, flameInstance)
+    end)
     ui_popID()
 
     ui_nextColumn()
 
-    ui_pushID("ExportFlameSparksSection")
-    renderExportButtons(ParticleEffectsType.Sparks, sparksInstance)
+    ui_pushID("ExportSparksSection")
+    UIOperations.createDisabledSection(not sparksInstance.enabled, function()
+        renderExportButtons(ParticleEffectsType.Sparks, sparksInstance)
+    end)
     ui_popID()
 
     ui_nextColumn()
 
     ui_pushID("ExportSmokeSection")
-    renderExportButtons(ParticleEffectsType.Smoke, smokeInstance)
+    UIOperations.createDisabledSection(not smokeInstance.enabled, function()
+        renderExportButtons(ParticleEffectsType.Smoke, smokeInstance)
+    end)
     ui_popID()
 
     -- finish the export_sections table
